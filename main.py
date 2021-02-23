@@ -99,25 +99,16 @@ class Cell(pygame.sprite.Sprite):
             return None
 
     def update(self, game):
-        l = []
         if self.energy >= self.max_energy:
-            t = Thread(target=self.reproduce)
-            l.append(t)
+            self.reproduce()
         elif self.energy <= 0:
-            t = Thread(target=self.kill)
-            l.append(t)
-
+            self.kill()
         if self.genome[self.genome_id] == 25:
-            t = Thread(target=self.photosynthesize)
-            l.append(t)
+            self.photosynthesize()
             self.genome_id = (self.genome_id + 1) % 64
         elif self.genome[self.genome_id] not in cells_commands:
             self.genome_id = (self.genome_id + self.genome[self.genome_id]) % 64
         self.energy -= cell_energy_to_live
-        for i in l:
-            i.start()
-        for i in l:
-            i.join()
 
     def reproduce(self):
         coords_list = []
@@ -171,10 +162,10 @@ class Game:
         self.cells_group = SpriteGroup()
         # self.previous_cells_field = self.cells_field
         self.generate_cells()
-        for i in range(10):
-            self.cells_field[i][i + 1] = Cell((i, i + 1), self)
-        self.cells_field[10][10] = Cell((10, 10), self)
-        self.cells_field[11][10] = Cell((11, 10), self)
+        # for i in range(40):
+        #     self.cells_field[i][i + 1] = Cell((i, i + 1), self)
+        # self.cells_field[10][10] = Cell((10, 10), self)
+        # self.cells_field[11][10] = Cell((11, 10), self)
         # self.cells_field[10][11] = Cell((10, 11), self)
         # self.cells_field[11][11] = Cell((11, 11), self)
         # for i in range(0, 2):
@@ -200,35 +191,10 @@ class Game:
             # self.clock.tick(self.fps)
             pygame.display.flip()
 
-    # def update(self):
-    #     global thread_list
-    #     sprites = self.cells_group.sprites()
-    #     le = len(sprites) // 8
-    #     if le:
-    #         for i in range(le):
-    #             for j in range(8):
-    #                 try:
-    #                     t = Thread(target=sprites[j + 8 * i].update, args=(self,))
-    #                     thread_list.append(t)
-    #                     t.start()
-    #                 except IndexError:
-    #                     break
-    #     else:
-    #         for j in range(8):
-    #             try:
-    #                 t = Thread(target=sprites[j].update, args=(self,))
-    #
-    #                 thread_list.append(t)
-    #                 t.start()
-    #             except IndexError:
-    #                 break
-    #     thread_list = []
-
-    # sprites[0].update(self)
-    # sprites[1].update(self)
 
     def update(self):
-        self.cells_group.update(self)
+        for cell in self.cells_group:
+            cell.update(self)
 
     def draw(self):
         for cell in self.cells_group:

@@ -48,10 +48,6 @@ class DeadCell(pygame.sprite.Sprite):
         self.y = coords[0]
         self.rect = pygame.Rect(self.x * 10, self.y * 10, 10, 10)
 
-    # def render(self, screen):
-    #     pygame.draw.rect(screen, self.border_color, (self.x * 10, self.y * 10, 10, 10))
-    #         pygame.draw.rect(screen, self.color, (self.x * 10 + 1, self.y * 10 + 1, 8, 8))
-
 
 class Cell(pygame.sprite.Sprite):
     def __init__(self, coords, game, parent=None, color=(20, 150, 0)):
@@ -65,28 +61,32 @@ class Cell(pygame.sprite.Sprite):
         self.energy = 250
         self.max_energy = 500
         self.genome_id = 0
+        self.image = pygame.Surface((10, 10))
+        pygame.draw.rect(self.image, self.border_color, (0, 0, 10, 10))
+        pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
+        self.rect = pygame.Rect(self.x * 10, self.y * 10, 10, 10)
         # self.photosynthesized = 0
         # self.cells_eaten = 0
 
         directions = ['up', 'down', 'left', 'right']
         self.direction = directions[randint(0, 3)]
 
-        # if not parent:
-        self.genome = numpy.array([25 for i in range(64)],
+        if not parent:
+            self.genome = numpy.array([25 for i in range(64)],
                                   numpy.int8)
-        # else:
-        #     if random() < 0.25:
-        #         self.genome = parent.genome
-        #         self.genome[randint(0, 63)] = randint(0, 63)
-        #     else:
-        #         self.genome = parent.genome
+        else:
+            if random() < 0.25:
+                self.genome = parent.genome
+                self.genome[randint(0, 63)] = randint(0, 63)
+            else:
+                self.genome = parent.genome
         # pprint(self.genome)
 
-    def render(self, screen):
-        pygame.draw.rect(screen, self.border_color, (self.x * 10, self.y * 10, 10, 10))
-        pygame.draw.rect(screen, self.color, (self.x * 10 + 1, self.y * 10 + 1, 8, 8))
+    # def render(self, screen):
+
 
     def move(self):
+        x, y = self.x, self.y
         if self.direction == 'left' and self.can_move(self.x - 1, self.y):
             self.x -= 1
         elif self.direction == 'right' and self.can_move(self.x + 1, self.y):
@@ -95,6 +95,11 @@ class Cell(pygame.sprite.Sprite):
             self.y -= 1
         elif self.direction == 'down' and self.can_move(self.x, self.y + 1):
             self.y += 1
+        if x != self.x:
+            self.rect.x = self.x * 10
+        if x != self.y:
+            self.rect.y = self.y * 10
+
 
     def can_move(self, x, y):
         if 0 <= x < window_width // 10 and 0 <= y < window_height // 10 and not \
@@ -215,6 +220,8 @@ class Game:
         self.cells_field[10][11] = Cell((10, 11), self)
         self.cells_field[11][11] = Cell((11, 11), self)
         self.dead_cells_group = SpriteGroup()
+        self.dead_cells_field = pygame.Surface((window_width, window_height))
+        self.dead_cells_field.fill((140, 140, 140))
         # for i in range(0, 2):
         #     self.cells_field[10][10 + (-1) ** i] = Cell((10, 10 + (-1) ** i), self)
         # for i in range(0, 2):
@@ -228,7 +235,6 @@ class Game:
 
     def run(self):
         while self.running:
-            self.screen.fill((140, 140, 140))
             self.draw()
             self.update()
             # self.previous_cells_field = self.cells_field
@@ -243,8 +249,7 @@ class Game:
             cell.update(self)
 
     def draw(self):
-        for cell in self.cells_group:
-            cell.render(self.screen)
+        self.cells_group.draw(self.screen)
         self.dead_cells_group.draw(self.screen)
 
 

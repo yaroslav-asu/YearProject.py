@@ -5,7 +5,6 @@ import pygame
 
 from cells import Cell
 
-
 from variables import *
 
 
@@ -21,9 +20,14 @@ class CellsFieldImage(pygame.Surface):
     def __init__(self):
         super().__init__((window_width, window_height))
         self.fill((140, 140, 140))
+        self.grey_square = pygame.Surface((10, 10))
 
-    def add(self, x, y, image):
-        self.blit(self, image, pygame.Rect(x * 10, y * 10, 10, 10))
+    def add(self, image, x, y):
+        print(x * 10, y * 10)
+        self.blit(image, pygame.Rect(x * 10, y * 10, 10, 10))
+
+    def __del__(self, x, y):
+        self.blit(self, self.grey_square, pygame.Rect(x * 10, y * 10, 10, 10))
 
 
 class Game:
@@ -53,8 +57,7 @@ class Game:
         self.cells_field[10][11] = Cell((10, 11), self)
         self.cells_field[11][11] = Cell((11, 11), self)
         self.dead_cells_group = SpriteGroup()
-        self.dead_cells_field = pygame.Surface((window_width, window_height))
-        self.dead_cells_field.fill((140, 140, 140))
+        self.dead_cells_field = CellsFieldImage()
         # for i in range(0, 2):
         #     self.cells_field[10][10 + (-1) ** i] = Cell((10, 10 + (-1) ** i), self)
         # for i in range(0, 2):

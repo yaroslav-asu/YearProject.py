@@ -5,21 +5,19 @@ import pygame
 from variables import *
 
 
-
-
 class DeadCell(pygame.sprite.Sprite):
-
     def __init__(self, coords, game):
         super().__init__()
         self.game = game
         self.x = coords[1]
         self.y = coords[0]
-        game.dead_cells_group.add(self)
+        self.game.dead_cells_group.add(self)
         self.color = (150, 150, 150)
         self.border_color = (80, 80, 80)
         self.image = pygame.Surface((10, 10))
         pygame.draw.rect(self.image, self.border_color, (0, 0, 10, 10))
         pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
+        self.game.dead_cells_field.add(self.image, self.x, self.y)
 
 
 class Cell(pygame.sprite.Sprite):
@@ -53,9 +51,6 @@ class Cell(pygame.sprite.Sprite):
                 self.genome[randint(0, 63)] = randint(0, 63)
             else:
                 self.genome = parent.genome
-        # pprint(self.genome)
-
-    # def render(self, screen):
 
     def move(self):
         x, y = self.x, self.y

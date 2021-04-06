@@ -17,7 +17,7 @@ class DeadCell(pygame.sprite.Sprite):
         self.image = pygame.Surface((10, 10))
         pygame.draw.rect(self.image, self.border_color, (0, 0, 10, 10))
         pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
-        self.game.dead_cells_field.add(self.image, self.x, self.y)
+        self.game.cells_field_image.add(self.image, self.x, self.y)
 
 
 class Cell(pygame.sprite.Sprite):
@@ -32,44 +32,71 @@ class Cell(pygame.sprite.Sprite):
         self.energy = 250
         self.max_energy = 500
         self.genome_id = 0
+        self.actions_count = number_of_available_actions
         self.image = pygame.Surface((10, 10))
         pygame.draw.rect(self.image, self.border_color, (0, 0, 10, 10))
         pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
         self.rect = pygame.Rect(self.x * 10, self.y * 10, 10, 10)
+        self.v = pygame.Surface((10, 10))
+        pygame.draw.rect(self.v, (100, 200, 200), self.rect)
+
+        self.game.cells_field_image.add(self.image, self.x, self.y)
+        self.game.cells_field_image.add(self.v, self.x, self.y)
         # self.photosynthesized = 0
         # self.cells_eaten = 0
+        self.actions_dict = {
+            25: self.photosynthesize,
+            26: self.move
+        }
 
         directions = ['up', 'down', 'left', 'right']
         self.direction = directions[randint(0, 3)]
 
         if not parent:
-            self.genome = numpy.array([25 for i in range(64)],
-                                      numpy.int8)
+            self.genome = numpy.array([25 for i in range(64)], numpy.int8)
+            # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             if random() < 0.25:
                 self.genome = parent.genome
-                self.genome[randint(0, 63)] = randint(0, 63)
+                # self.genome[randint(0, 63)] = randint(0, 63)
+                self.genome[randint(0, 63)] = randint(25, 26)
             else:
                 self.genome = parent.genome
 
+    def do_action(self, action_id):
+        try:
+            if action_id in self.actions_dict.keys():
+                if self.actions_count - actions_costs[action_id] >= 0:
+                    self.actions_dict[action_id]()
+                    self.genome_id = (self.genome_id + 1) % 64
+                    self.actions_count -= actions_costs[action_id]
+                    self.do_action(self.genome[self.genome_id])
+                else:
+                    self.energy -= cell_energy_to_live
+                self.actions_count = number_of_available_actions
+            else:
+                self.genome_id = (self.genome_id + self.genome[(self.genome_id + 1) % 64]) % 64
+                self.do_action(self.genome[self.genome_id])
+        except RecursionError:
+            print('RecErr')
+
     def move(self):
-        x, y = self.x, self.y
+        start_x, start_y = self.x, self.y
         if self.direction == 'left' and self.can_move(self.x - 1, self.y):
-            self.x -= 1
+            self.x = (self.x + window_width // 10 - 1) % (window_width // 10)
         elif self.direction == 'right' and self.can_move(self.x + 1, self.y):
-            self.x += 1
+            self.x = (self.x + 1) % (window_width // 10)
         elif self.direction == 'up' and self.can_move(self.x, self.y - 1):
             self.y -= 1
         elif self.direction == 'down' and self.can_move(self.x, self.y + 1):
             self.y += 1
-        if x != self.x:
-            self.rect.x = self.x * 10
-        if x != self.y:
-            self.rect.y = self.y * 10
+        if start_x != self.x or start_y != self.y:
+            self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
+        self.rect.move_ip(self.x * 10, self.y * 10)
 
     def can_move(self, x, y):
-        if 0 <= x < window_width // 10 and 0 <= y < window_height // 10 and not \
-            self.get_object_from_coords(x, y):
+        if 0 <= y < window_height // 10 and \
+            not self.get_object_from_coords(x % (window_width // 10), y):
             return True
         else:
             return False
@@ -96,33 +123,34 @@ class Cell(pygame.sprite.Sprite):
             self.reproduce()
         elif self.energy <= 0:
             self.kill()
-        if self.genome[self.genome_id] == 25:
-            self.photosynthesize()
-            self.genome_id = (self.genome_id + 1) % 64
-            self.energy -= cell_energy_to_live
-        elif self.genome[self.genome_id] == 26:
-            counter = 0
-            while counter < 5 and (self.genome[self.genome_id] == 26 or
-                                   self.genome[(self.genome_id + 1) % 64] == 26 or
-                                   (self.genome[(self.genome_id + 1) % 64] not in cells_commands
-                                    and self.genome[(self.genome_id + self.genome[
-                                           self.genome_id + 1]) % 64] == 26)):
-                self.move()
-                if self.genome[(self.genome_id + 1) % 64] == 26:
-                    self.genome_id = (self.genome_id + 1) % 64
-                else:
-                    self.genome_id = (self.genome_id + self.genome[
-                        (self.genome_id + 1) % 64]) % 64
-                counter += 1
-            self.energy -= cell_energy_to_live
-        elif self.genome[self.genome_id] not in cells_commands:
-            self.genome_id = (self.genome_id + self.genome[self.genome_id]) % 64
-        print(self.game.cells_group)
+        self.do_action(self.genome[self.genome_id])
+        # if self.genome[self.genome_id] == 25:
+        #     self.photosynthesize()
+        #     self.genome_id = (self.genome_id + 1) % 64
+        #     self.energy -= cell_energy_to_live
+        # elif self.genome[self.genome_id] == 26:
+        #     counter = 0
+        #     while counter < 5 and (self.genome[self.genome_id] == 26 or
+        #                            self.genome[(self.genome_id + 1) % 64] == 26 or
+        #                            (self.genome[(self.genome_id + 1) % 64] not in cells_commands
+        #                             and self.genome[(self.genome_id + self.genome[
+        #                                    self.genome_id + 1]) % 64] == 26)):
+        #         self.move()
+        #         if self.genome[(self.genome_id + 1) % 64] == 26:
+        #             self.genome_id = (self.genome_id + 1) % 64
+        #         else:
+        #             self.genome_id = (self.genome_id + self.genome[
+        #                 (self.genome_id + 1) % 64]) % 64
+        #         counter += 1
+        #     self.energy -= cell_energy_to_live
+        # elif self.genome[self.genome_id] not in cells_commands:
+        #     self.genome_id = (self.genome_id + self.genome[self.genome_id]) % 64
+        # print(self.game.cells_group)
 
     def reproduce(self):
         coords_list = []
         for i in range(0, 2):
-            x = self.x + (-1) ** i
+            x = (self.x + (-1) ** i + window_width // 10) % (window_width // 10)
             y = self.y + (-1) ** i
             if self.can_move(x, self.y):
                 coords_list.append((self.y, x))
@@ -146,4 +174,5 @@ class Cell(pygame.sprite.Sprite):
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None
+        self.game.cells_field_image.delete(self.x, self.y)
         super().kill()

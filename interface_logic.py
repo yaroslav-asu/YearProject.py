@@ -20,6 +20,7 @@ class Interface(QtWidgets.QMainWindow):
         # self.ui.setupUi(self)
         # print(self.PauseButton)
         # self.PauseButton.clicked.connect(self.stop_game)
+        self.move((1920 - self.width()) // 2 + 640, (1080 - self.height() - 75) // 2)
         self.pushButton.clicked.connect(self.stop_game)
         self.genomeLayoutList = []
         for i in range(8):

@@ -18,6 +18,22 @@ class SpriteGroup(pygame.sprite.Group):
         self.draw(screen)
 
 
+class CursorImage(pygame.Surface):
+    def __init__(self):
+        super().__init__((window_width, window_height))
+        self.color = (255, 255, 0)
+        self.cursor_image = pygame.Surface((10, 10))
+        # pygame.draw.rect(self.cursor_image, self.color, (0, 0, 10, 10))
+        for pos in [((0, 0), (9, 0)), ((9, 0), (9, 9)), ((9, 9), (0, 9)), ((0, 9), (0, 0))]:
+            pygame.draw.line(self.cursor_image, self.color, *pos, 1)
+        self.set_colorkey((0, 0, 0))
+
+    def set_cursor_position(self, coords):
+        self.fill((0, 0, 0))
+        self.set_colorkey((0, 0, 0))
+        self.blit(self.cursor_image, (coords[0] // 10 * 10, coords[1] // 10 * 10, 10, 10))
+
+
 class CellsFieldImage(pygame.Surface):
     def __init__(self):
         super().__init__((window_width, window_height))
@@ -52,12 +68,9 @@ class Game:
         self.cells_field = numpy.array([[None for i in range(window_width // 10)] for j in range(
             window_height // 10)])
         self.cells_field_image = CellsFieldImage()
+        self.cursor_image = CursorImage()
         self.cells_group = SpriteGroup()
 
-        # self.previous_cells_field = self.cells_field
-        # self.generate_cells()
-        # for i in range(40):
-        #     self.cells_field[i][i + 1] = Cell((i, i + 1), self)
         self.cells_field[10][9] = Cell((10, 9), self)
         self.cells_field[9][10] = Cell((9, 10), self)
         # self.cells_field[10][10] = Cell((10, 10), self)
@@ -85,16 +98,24 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     os._exit(1)
+                # if event.type == pygame.MOUSEBUTTONUP:
+                #     print('asdfasdf')
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
-                    clicked_sprites = [sprite for sprite in self.cells_group if sprite.rect.collidepoint(pos)]
+                    self.cursor_image.set_cursor_position(pos)
+                    clicked_sprites = [sprite for sprite in self.cells_group if
+                                       sprite.rect.collidepoint(pos)]
                     if clicked_sprites:
                         window.fill_genome_field(clicked_sprites[0])
-                        print("clicked")
+
             with stop_lock:
                 if variables.stop:
+                    self.screen.blit(self.cells_field_image, (0, 0))
+                    self.screen.blit(self.cursor_image, (0, 0))
+                    pygame.display.flip()
                     continue
             self.screen.blit(self.cells_field_image, (0, 0))
+            self.screen.blit(self.cursor_image, (0, 0))
             self.draw()
             self.update()
             # self.previous_cells_field = self.cells_field
@@ -103,7 +124,6 @@ class Game:
             pygame.display.flip()
 
     def update(self):
-
         for cell in self.cells_group:
             cell.update(self)
 

@@ -1,6 +1,8 @@
 import sys
 from threading import Lock
 
+import pygame
+
 window_width = 900
 window_height = 600
 
@@ -17,3 +19,6 @@ stop = False
 fps = 60
 
 
+def create_border(image, color):
+    for pos in [((0, 0), (9, 0)), ((9, 0), (9, 9)), ((9, 9), (0, 9)), ((0, 9), (0, 0))]:
+        pygame.draw.line(image, color, *pos, 1)

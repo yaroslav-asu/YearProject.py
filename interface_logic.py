@@ -41,13 +41,11 @@ class Interface(QtWidgets.QMainWindow):
         for i in range(self.genomeLayout.count()):
             for j in range(self.genomeLayout.itemAt(i).count()):
                 self.genomeLayoutList[i][j].setText(str(genome[i][j]))
-                # self.genomeLayoutList[i][j].setText(str(genome[i][j]))
-                # self.genomeLayout.itemAt(i).itemAt(j).setText(str(genome[i][j]))
 
-        # genome = sprite.genome
-        # for i in range(8):
-        #     self.
-        #     for j in range(8):
+    def clear_genome(self):
+        for i in range(self.genomeLayout.count()):
+            for j in range(self.genomeLayout.itemAt(i).count()):
+                self.genomeLayoutList[i][j].setText("")
 
     @staticmethod
     def stop_game():

@@ -5,6 +5,14 @@ import pygame
 from variables import *
 
 
+def normalize_coords(*args):
+    if len(args) == 1:
+        args = args[0][0], args[0][1]
+    x = args[0] % (window_width // 10)
+    y = args[1]
+    return x, y
+
+
 class DeadCell(pygame.sprite.Sprite):
     def __init__(self, coords, game):
         super().__init__()
@@ -30,13 +38,15 @@ class Cell(pygame.sprite.Sprite):
         self.color = color
         self.border_color = (80, 80, 80)
         self.game = game
-        self.energy = 250
-        self.max_energy = 500
+        self.energy = start_cell_energy
+        self.max_energy = max_cell_energy
         self.genome_id = 0
-        self.actions_count = number_of_available_actions
+        self.degree = randint(0, 7) * 45
+        self.children_counter = 0
+
+        self.actions_count = cells_number_of_available_actions
         self.image = pygame.Surface((10, 10))
         create_border(self.image, self.border_color)
-        # pygame.draw.rect(self.image, self.border_color, (0, 0, 10, 10))
         pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
         self.rect = pygame.Rect(self.x * 10, self.y * 10, 10, 10)
 
@@ -44,58 +54,115 @@ class Cell(pygame.sprite.Sprite):
         # self.photosynthesized = 0
         # self.cells_eaten = 0
         self.actions_dict = {
+            21: self.get_self_energy,
+            22: self.look_in_front,
+            23: self.change_degree,
+            24: self.get_energy_from_mineral,
             25: self.photosynthesize,
             26: self.move
         }
-
-        directions = ['up', 'down', 'left', 'right']
-        self.direction = directions[randint(0, 3)]
-
         if not parent:
             self.genome = numpy.array([25 for i in range(64)], numpy.int8)
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
-            if random() < 0.25:
-                self.genome = parent.genome
-                # self.genome[randint(0, 63)] = randint(0, 63)
-                self.genome[randint(0, 63)] = randint(25, 26)
-            else:
-                self.genome = parent.genome
+            self.genome = parent.genome.copy()
+            self.genome[3] = 26
+            # if random() < 0.25:
+            #     self.genome[randint(0, 63)] = randint(0, 63)
 
     def do_action(self, action_id):
         try:
             if action_id in self.actions_dict.keys():
                 if self.actions_count - actions_costs[action_id] >= 0:
-                    self.actions_dict[action_id]()
-                    self.genome_id = (self.genome_id + 1) % 64
+                    if action_id == 23:
+                        self.actions_dict[action_id]((self.genome[(self.genome_id + 1) % 64] % 8)
+                                                     * 45)
+                    else:
+                        self.actions_dict[action_id]()
                     self.actions_count -= actions_costs[action_id]
+                    self.genome_id = (self.genome_id + 1) % 64
                     self.do_action(self.genome[self.genome_id])
                 else:
                     self.energy -= cell_energy_to_live
-                self.actions_count = number_of_available_actions
+                    self.actions_count = cells_number_of_available_actions
             else:
                 self.genome_id = (self.genome_id + self.genome[(self.genome_id + 1) % 64]) % 64
                 self.do_action(self.genome[self.genome_id])
         except RecursionError:
-            print('RecErr')
+            self.kill()
+
+    def change_degree(self, degree):
+        self.degree = (self.degree + degree) % 360
+
+
+    def get_self_energy(self):
+        if self.energy < self.genome[(self.genome_id + 1) % 64]:
+            self.do_action(self.photosynthesize())
+
+    def look_in_front(self):
+        try:
+            if self.degree == 0:
+                coords = normalize_coords(self.x + 1, self.y)
+            elif self.degree == 1 * 45:
+                coords = normalize_coords(self.x + 1, self.y + 1)
+            elif self.degree == 2 * 45:
+                coords = normalize_coords(self.x, self.y + 1)
+            elif self.degree == 3 * 45:
+                coords = normalize_coords(self.x - 1, self.y + 1)
+            elif self.degree == 4 * 45:
+                coords = normalize_coords(self.x - 1, self.y)
+            elif self.degree == 5 * 45:
+                coords = normalize_coords(self.x - 1, self.y - 1)
+            elif self.degree == 6 * 45:
+                coords = normalize_coords(self.x, self.y - 1)
+            elif self.degree == 7 * 45:
+                coords = normalize_coords(self.x + 1, self.y - 1)
+            in_front_obj = self.get_object_from_coords(*coords)
+            if in_front_obj == 'Cell':
+                coefficient = 1
+            elif in_front_obj == 'DeadCell':
+                coefficient = 2
+            elif in_front_obj == 'FamilyCell':
+                coefficient = 3
+            elif in_front_obj == 'Wall':
+                coefficient = 4
+            elif not in_front_obj:
+                coefficient = 5
+            action_id = self.genome[(self.genome_id + coefficient) % 64]
+            self.do_action(action_id)
+        except UnboundLocalError as err:
+            print(err, self.degree)
+            pass
 
     def move(self):
         start_x, start_y = self.x, self.y
-        # print(self.x, self.y, self.game.cells_field.size())
-        self.game.cells_field[self.y][self.x] = None
-        if self.direction == 'left' and self.can_move(self.x - 1, self.y):
-            # self.x = (self.x + window_width // 10 - 1) % (window_width // 10)
-            self.x = (self.x - 1) % (window_width // 10)
-        elif self.direction == 'right' and self.can_move(self.x + 1, self.y):
+        self.change_degree((self.genome[(self.genome_id + 1) % 64] % 8) * 45)
+
+        if self.degree == 0 and self.can_move(self.x + 1, self.y):
             self.x = (self.x + 1) % (window_width // 10)
-        elif self.direction == 'up' and self.can_move(self.x, self.y - 1):
-            self.y -= 1
-        elif self.direction == 'down' and self.can_move(self.x, self.y + 1):
+        elif self.degree == 45 and self.can_move(self.x + 1, self.y + 1):
+            self.x = (self.x + 1) % (window_width // 10)
             self.y += 1
+        elif self.degree == 90 and self.can_move(self.x, self.y + 1):
+            self.y += 1
+        elif self.degree == 135 and self.can_move(self.x - 1, self.y + 1):
+            self.x = (self.x - 1) % (window_width // 10)
+            self.y += 1
+        elif self.degree == 180 and self.can_move(self.x - 1, self.y):
+            self.x = (self.x - 1) % (window_width // 10)
+        elif self.degree == 225 and self.can_move(self.x - 1, self.y - 1):
+            self.x = (self.x - 1) % (window_width // 10)
+            self.y -= 1
+        elif self.degree == 270 and self.can_move(self.x, self.y - 1):
+            self.y -= 1
+        elif self.degree == 315 and self.can_move(self.x + 1, self.y - 1):
+            self.x = (self.x + 1) % (window_width // 10)
+            self.y -= 1
         if start_x != self.x or start_y != self.y:
             self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
-        self.rect.x, self.rect.y = self.x * 10, self.y * 10
-        self.game.cells_field[self.y][self.x] = self
+            self.rect.x, self.rect.y = self.x * 10, self.y * 10
+            self.game.cells_field[start_y][start_x] = None
+            self.game.cells_field[self.y][self.x] = self
 
     def can_move(self, x, y):
         if 0 <= y < window_height // 10 and \
@@ -105,6 +172,8 @@ class Cell(pygame.sprite.Sprite):
             return False
 
     def get_object_from_coords(self, x, y):
+        if y < 0 or y >= (window_height // 10):
+            return 'Wall'
         if isinstance(self.game.cells_field[y][x], Cell):
             counter = 0
             for i in self.genome == self.game.cells_field[y][x]:
@@ -113,11 +182,11 @@ class Cell(pygame.sprite.Sprite):
                     if counter > 1:
                         break
             if counter == 1:
-                return 'Family_Cell'
+                return 'FamilyCell'
             else:
                 return 'Cell'
         elif isinstance(self.game.cells_field[y][x], DeadCell):
-            return 'Dead'
+            return 'DeadCell'
         elif not self.game.cells_field[y][x]:
             return None
 
@@ -145,13 +214,18 @@ class Cell(pygame.sprite.Sprite):
             self.game.cells_group.remove(self)
             # super().kill()
             self.game.cells_field[self.y][self.x] = DeadCell((self.y, self.x), self.game)
-
             return
-        self.energy = 250
-        # self.kill()
+        self.energy = start_cell_energy
+
+        self.children_counter += 1
+        if self.children_counter == 3:
+            self.kill()
 
     def photosynthesize(self):
-        self.energy += self.game.energy_field[self.y][self.x]['photosynthesis']
+        self.energy += self.game.energy_field[self.y][self.x]['sun']
+
+    def get_energy_from_mineral(self):
+        self.energy += self.game.energy_field[self.y][self.x]['minerals']
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None

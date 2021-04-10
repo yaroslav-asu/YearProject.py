@@ -1,6 +1,7 @@
 import os
+import pprint
 import sys
-from random import randint
+from random import randint, random
 
 import numpy
 import pygame
@@ -77,27 +78,30 @@ class Game:
         self.screen = pygame.display.set_mode((window_width, window_height))
         self.clock = pygame.time.Clock()
         self.running = True
-        self.fps = 1000
-        self.energy_field = numpy.array([[{'photosynthesis': 5} for i in range(90)] for j in range(
-            60)])
+        self.fps = fps
+        self.energy_field = numpy.array([[{'sun': 5, 'minerals': 3} for i in range(window_width
+                                                                                   // 10)]
+                                         for j in range(window_height // 10)])
         self.cells_field = numpy.array([[None for i in range(window_width // 10)] for j in range(
             window_height // 10)])
         self.cells_field_image = CellsFieldImage()
         self.cursor_image = CursorImage()
         self.cells_group = SpriteGroup()
+        self.dead_cells_group = SpriteGroup()
 
         self.cells_field[10][9] = Cell((10, 9), self)
-        self.cells_field[9][10] = Cell((9, 10), self)
+        # self.cells_field[9][10] = Cell((9, 10), self)
         # self.cells_field[10][10] = Cell((10, 10), self)
         # self.cells_field[11][10] = Cell((11, 10), self)
         # self.cells_field[10][11] = Cell((10, 11), self)
         # self.cells_field[11][11] = Cell((11, 11), self)
-        self.dead_cells_group = SpriteGroup()
+
+        # self.generate_cells()
 
     def generate_cells(self):
         for i in range(window_height // 10):
             for j in range(window_width // 10):
-                if randint(0, 1):
+                if random() < 0.1:
                     self.cells_field[i][j] = Cell((i, j), self)
 
     def run(self):
@@ -110,7 +114,6 @@ class Game:
                     os._exit(1)
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
-                    # self.cursor_image.set_cursor_position(pos)
                     clicked_sprites = [sprite for sprite in list(self.cells_group) +
                                        list(self.dead_cells_group)
                                        if sprite.rect.collidepoint(pos)]

@@ -1,4 +1,3 @@
-import sys
 from threading import Lock
 
 import pygame
@@ -18,6 +17,11 @@ actions_costs = {
     24: 5,  # получение энергии из минералов
     25: 5,  # фотосинтез
     26: 1  # движение
+}
+
+energy_field_stats = {
+    'sun': 5,
+    'minerals': 4
 }
 
 start_cell_energy = 50

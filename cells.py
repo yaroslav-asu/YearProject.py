@@ -1,7 +1,7 @@
-from random import randint, random
+from random import randint
 
 import numpy
-import pygame
+
 from variables import *
 
 
@@ -51,8 +51,11 @@ class Cell(pygame.sprite.Sprite):
         self.rect = pygame.Rect(self.x * 10, self.y * 10, 10, 10)
 
         self.game.cells_field_image.add(self.image, self.x, self.y)
-        # self.photosynthesized = 0
-        # self.cells_eaten = 0
+
+        self.from_sun_energy_counter = 0
+        self.from_cells_energy_counter = 0
+        self.from_minerals_energy_counter = 0
+
         self.actions_dict = {
             21: self.get_self_energy,
             22: self.look_in_front,
@@ -214,9 +217,11 @@ class Cell(pygame.sprite.Sprite):
 
     def photosynthesize(self):
         self.energy += self.game.energy_field[self.y][self.x]['sun']
+        self.from_sun_energy_counter += 1
 
     def get_energy_from_mineral(self):
         self.energy += self.game.energy_field[self.y][self.x]['minerals']
+        self.from_minerals_energy_counter += 1
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None

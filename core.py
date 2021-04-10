@@ -1,13 +1,9 @@
 import os
-import pprint
-import sys
-from random import randint, random
+from random import random
 
 import numpy
-import pygame
 
 from cells import Cell
-
 from variables import *
 
 
@@ -79,8 +75,8 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.fps = fps
-        self.energy_field = numpy.array([[{'sun': 5, 'minerals': 3} for i in range(window_width
-                                                                                   // 10)]
+        self.energy_field = numpy.array([[energy_field_stats for i in range(window_width
+                                                                            // 10)]
                                          for j in range(window_height // 10)])
         self.cells_field = numpy.array([[None for i in range(window_width // 10)] for j in range(
             window_height // 10)])

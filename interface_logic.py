@@ -18,7 +18,7 @@ class Interface(QtWidgets.QMainWindow):
         # print(self.PauseButton)
         # self.PauseButton.clicked.connect(self.stop_game)
         self.move((1920 - self.width()) // 2 + 640, (1080 - self.height() - 75) // 2)
-        self.pushButton.clicked.connect(self.stop_game)
+        self.stopButton.clicked.connect(self.stop_game)
         self.genomeLayoutList = []
         for i in range(8):
             horizontal_layout = QtWidgets.QHBoxLayout()
@@ -44,12 +44,15 @@ class Interface(QtWidgets.QMainWindow):
             for j in range(self.genomeLayout.itemAt(i).count()):
                 self.genomeLayoutList[i][j].setText("")
 
-    @staticmethod
-    def stop_game():
+    def stop_game(self):
         from variables import stop_lock
         import variables
         with stop_lock:
             variables.stop = not variables.stop
+            if variables.stop:
+                self.stopButton.setText("start")
+            if not variables.stop:
+                self.stopButton.setText("stop")
 
     def closeEvent(self, event):
         os._exit(1)

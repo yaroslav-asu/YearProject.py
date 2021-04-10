@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, random
 
 import numpy
 
@@ -30,7 +30,7 @@ class DeadCell(pygame.sprite.Sprite):
 
 
 class Cell(pygame.sprite.Sprite):
-    def __init__(self, coords, game, parent=None, color=(20, 150, 0)):
+    def __init__(self, coords, game, parent=None, color=(20, 150, 20)):
         super().__init__()
         game.cells_group.add(self)
         self.x = coords[1]
@@ -62,16 +62,29 @@ class Cell(pygame.sprite.Sprite):
             23: self.change_degree,
             24: self.get_energy_from_mineral,
             25: self.photosynthesize,
-            26: self.move
+            26: self.move,
+            27: self.bite
         }
         if not parent:
             self.genome = numpy.array([25 for i in range(64)], numpy.int8)
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             self.genome = parent.genome.copy()
-            self.genome[3] = 26
-            # if random() < 0.25:
-            #     self.genome[randint(0, 63)] = randint(0, 63)
+            if random() < 0.25:
+                self.genome[randint(0, 63)] = randint(0, 63)
+
+    # def change_color(self):
+    #     r, g, b = self.color
+    #     self.color = ((r + (self.from_cells_energy_counter * 10) % 131 + 20) % 151,
+    #                   (g + (self.from_sun_energy_counter * 10) % 131 + 20) % 151,
+    #                   (b + (self.from_minerals_energy_counter * 10) % 131 + 20) % 151)
+
+    def bite(self):
+        in_front_coords = self.in_front_position()
+        in_front_obj = self.get_object_from_coords(in_front_coords)
+        if in_front_obj == 'Cell' or in_front_obj == 'DeadCell' or in_front_obj == 'FamilyCell':
+            self.game.cells_field[in_front_coords[1]][in_front_coords[0]].kill()
+            self.energy += energy_for_cell_eat
 
     def do_action(self, action_id):
         try:
@@ -186,9 +199,11 @@ class Cell(pygame.sprite.Sprite):
 
     def update(self, game):
         if self.energy >= self.max_energy:
-            self.reproduce()
+            # self.reproduce()
+            pass
         elif self.energy <= 0:
             self.kill()
+        # self.change_color()
         self.do_action(self.genome[self.genome_id])
 
     def reproduce(self):
@@ -203,7 +218,7 @@ class Cell(pygame.sprite.Sprite):
         if len(coords_list):
             coords = coords_list[randint(0, len(coords_list) - 1)]
             self.game.cells_field[coords[0]][coords[1]] = \
-                Cell([coords[0], coords[1]], self.game, self)
+                Cell([coords[0], coords[1]], self.game, self, self.color)
         else:
             self.game.cells_group.remove(self)
             # super().kill()

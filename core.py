@@ -85,14 +85,14 @@ class Game:
         self.cells_group = SpriteGroup()
         self.dead_cells_group = SpriteGroup()
 
-        self.cells_field[10][9] = Cell((10, 9), self)
+        # self.cells_field[10][9] = Cell((10, 9), self)
         # self.cells_field[9][10] = Cell((9, 10), self)
         # self.cells_field[10][10] = Cell((10, 10), self)
         # self.cells_field[11][10] = Cell((11, 10), self)
         # self.cells_field[10][11] = Cell((10, 11), self)
         # self.cells_field[11][11] = Cell((11, 11), self)
 
-        # self.generate_cells()
+        self.generate_cells()
 
     def generate_cells(self):
         for i in range(window_height // 10):
@@ -104,6 +104,7 @@ class Game:
         import variables
         from interface_logic import window
         while self.running:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False

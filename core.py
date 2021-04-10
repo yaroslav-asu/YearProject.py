@@ -1,7 +1,10 @@
 import os
-from random import random
+import pprint
+import sys
+from random import randint, random
 
 import numpy
+import pygame
 
 from cells import Cell
 from variables import *

@@ -1,7 +1,10 @@
 import os
-import sys
 
-from PyQt5 import QtWidgets, uic, QtCore
+import numpy as np
+
+from interface import Ui_MainWindow
+from PyQt5 import QtWidgets, uic, Qt, QtCore
+import sys
 
 
 # import variables

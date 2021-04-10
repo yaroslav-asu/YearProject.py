@@ -1,7 +1,7 @@
 from random import randint, random
 
 import numpy
-
+import pygame
 from variables import *
 
 

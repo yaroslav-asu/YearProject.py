@@ -1,3 +1,4 @@
+import sys
 from threading import Lock
 
 import pygame

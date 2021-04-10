@@ -1,10 +1,9 @@
-import threading
-
 import pygame
-
+import pyximport
 import interface_logic
 # pyximport.install()
 from core import Game
+import threading
 import multiprocessing
 if __name__ == "__main__":
     # from core_c import start_game

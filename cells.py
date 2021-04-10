@@ -94,45 +94,40 @@ class Cell(pygame.sprite.Sprite):
     def change_degree(self, degree):
         self.degree = (self.degree + degree) % 360
 
-
     def get_self_energy(self):
         if self.energy < self.genome[(self.genome_id + 1) % 64]:
             self.do_action(self.photosynthesize())
 
     def look_in_front(self):
-        try:
-            if self.degree == 0:
-                coords = normalize_coords(self.x + 1, self.y)
-            elif self.degree == 1 * 45:
-                coords = normalize_coords(self.x + 1, self.y + 1)
-            elif self.degree == 2 * 45:
-                coords = normalize_coords(self.x, self.y + 1)
-            elif self.degree == 3 * 45:
-                coords = normalize_coords(self.x - 1, self.y + 1)
-            elif self.degree == 4 * 45:
-                coords = normalize_coords(self.x - 1, self.y)
-            elif self.degree == 5 * 45:
-                coords = normalize_coords(self.x - 1, self.y - 1)
-            elif self.degree == 6 * 45:
-                coords = normalize_coords(self.x, self.y - 1)
-            elif self.degree == 7 * 45:
-                coords = normalize_coords(self.x + 1, self.y - 1)
-            in_front_obj = self.get_object_from_coords(*coords)
-            if in_front_obj == 'Cell':
-                coefficient = 1
-            elif in_front_obj == 'DeadCell':
-                coefficient = 2
-            elif in_front_obj == 'FamilyCell':
-                coefficient = 3
-            elif in_front_obj == 'Wall':
-                coefficient = 4
-            elif not in_front_obj:
-                coefficient = 5
-            action_id = self.genome[(self.genome_id + coefficient) % 64]
-            self.do_action(action_id)
-        except UnboundLocalError as err:
-            print(err, self.degree)
-            pass
+        if self.degree == 0:
+            coords = normalize_coords(self.x + 1, self.y)
+        elif self.degree == 1 * 45:
+            coords = normalize_coords(self.x + 1, self.y + 1)
+        elif self.degree == 2 * 45:
+            coords = normalize_coords(self.x, self.y + 1)
+        elif self.degree == 3 * 45:
+            coords = normalize_coords(self.x - 1, self.y + 1)
+        elif self.degree == 4 * 45:
+            coords = normalize_coords(self.x - 1, self.y)
+        elif self.degree == 5 * 45:
+            coords = normalize_coords(self.x - 1, self.y - 1)
+        elif self.degree == 6 * 45:
+            coords = normalize_coords(self.x, self.y - 1)
+        elif self.degree == 7 * 45:
+            coords = normalize_coords(self.x + 1, self.y - 1)
+        in_front_obj = self.get_object_from_coords(*coords)
+        if in_front_obj == 'Cell':
+            coefficient = 1
+        elif in_front_obj == 'DeadCell':
+            coefficient = 2
+        elif in_front_obj == 'FamilyCell':
+            coefficient = 3
+        elif in_front_obj == 'Wall':
+            coefficient = 4
+        elif not in_front_obj:
+            coefficient = 5
+        action_id = self.genome[(self.genome_id + coefficient) % 64]
+        self.do_action(action_id)
 
     def move(self):
         start_x, start_y = self.x, self.y

@@ -91,14 +91,7 @@ class Cell(pygame.sprite.Sprite):
         except RecursionError:
             self.kill()
 
-    def change_degree(self, degree):
-        self.degree = (self.degree + degree) % 360
-
-    def get_self_energy(self):
-        if self.energy < self.genome[(self.genome_id + 1) % 64]:
-            self.do_action(self.photosynthesize())
-
-    def look_in_front(self):
+    def in_front_position(self):
         if self.degree == 0:
             coords = normalize_coords(self.x + 1, self.y)
         elif self.degree == 1 * 45:
@@ -115,6 +108,17 @@ class Cell(pygame.sprite.Sprite):
             coords = normalize_coords(self.x, self.y - 1)
         elif self.degree == 7 * 45:
             coords = normalize_coords(self.x + 1, self.y - 1)
+        return coords
+
+    def change_degree(self, degree):
+        self.degree = (self.degree + degree) % 360
+
+    def get_self_energy(self):
+        if self.energy < self.genome[(self.genome_id + 1) % 64]:
+            self.do_action(self.photosynthesize())
+
+    def look_in_front(self):
+        coords = self.in_front_position()
         in_front_obj = self.get_object_from_coords(*coords)
         if in_front_obj == 'Cell':
             coefficient = 1
@@ -132,41 +136,33 @@ class Cell(pygame.sprite.Sprite):
     def move(self):
         start_x, start_y = self.x, self.y
         self.change_degree((self.genome[(self.genome_id + 1) % 64] % 8) * 45)
-
-        if self.degree == 0 and self.can_move(self.x + 1, self.y):
-            self.x = (self.x + 1) % (window_width // 10)
-        elif self.degree == 45 and self.can_move(self.x + 1, self.y + 1):
-            self.x = (self.x + 1) % (window_width // 10)
-            self.y += 1
-        elif self.degree == 90 and self.can_move(self.x, self.y + 1):
-            self.y += 1
-        elif self.degree == 135 and self.can_move(self.x - 1, self.y + 1):
-            self.x = (self.x - 1) % (window_width // 10)
-            self.y += 1
-        elif self.degree == 180 and self.can_move(self.x - 1, self.y):
-            self.x = (self.x - 1) % (window_width // 10)
-        elif self.degree == 225 and self.can_move(self.x - 1, self.y - 1):
-            self.x = (self.x - 1) % (window_width // 10)
-            self.y -= 1
-        elif self.degree == 270 and self.can_move(self.x, self.y - 1):
-            self.y -= 1
-        elif self.degree == 315 and self.can_move(self.x + 1, self.y - 1):
-            self.x = (self.x + 1) % (window_width // 10)
-            self.y -= 1
+        in_front_coords = self.in_front_position()
+        if self.can_move(in_front_coords):
+            self.x, self.y = in_front_coords
         if start_x != self.x or start_y != self.y:
             self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
             self.rect.x, self.rect.y = self.x * 10, self.y * 10
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self
 
-    def can_move(self, x, y):
+    def can_move(self, *args):
+        if len(args) == 1:
+            x, y = args[0][0], args[0][1]
+        else:
+            x, y = args[0], args[1]
+
         if 0 <= y < window_height // 10 and \
             not self.get_object_from_coords(x % (window_width // 10), y):
             return True
         else:
             return False
 
-    def get_object_from_coords(self, x, y):
+    def get_object_from_coords(self, *args):
+        if len(args) == 1:
+            x, y = args[0][0], args[0][1]
+        else:
+            x, y = args[0], args[1]
+
         if y < 0 or y >= (window_height // 10):
             return 'Wall'
         if isinstance(self.game.cells_field[y][x], Cell):

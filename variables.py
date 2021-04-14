@@ -31,7 +31,7 @@ max_cell_energy = 100
 
 stop_lock = Lock()
 stop = False
-fps = 100
+fps = 1000
 
 
 def create_border(image, color):

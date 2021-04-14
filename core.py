@@ -100,7 +100,7 @@ class Game:
     def generate_cells(self):
         for i in range(window_height // 10):
             for j in range(window_width // 10):
-                if random() < 0.1:
+                if random() < 0.0001:
                     self.cells_field[i][j] = Cell((i, j), self)
 
     def run(self):

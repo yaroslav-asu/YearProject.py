@@ -1,7 +1,7 @@
 from random import randint, random
 
 import numpy
-import pygame
+
 from variables import *
 
 
@@ -28,6 +28,11 @@ class DeadCell(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
         self.game.cells_field_image.add(self.image, self.x, self.y)
 
+    def kill(self):
+        self.game.cells_field[self.y][self.x] = None
+        self.game.cells_field_image.delete(self.x, self.y)
+        super().kill()
+
 
 class Cell(pygame.sprite.Sprite):
     def __init__(self, coords, game, parent=None, color=(20, 150, 20)):
@@ -43,6 +48,7 @@ class Cell(pygame.sprite.Sprite):
         self.genome_id = 0
         self.degree = randint(0, 7) * 45
         self.children_counter = 0
+        self.rec_counter = 0
 
         self.actions_count = cells_number_of_available_actions
         self.image = pygame.Surface((10, 10))
@@ -73,11 +79,11 @@ class Cell(pygame.sprite.Sprite):
             if random() < 0.25:
                 self.genome[randint(0, 63)] = randint(0, 63)
 
-    # def change_color(self):
-    #     r, g, b = self.color
-    #     self.color = ((r + (self.from_cells_energy_counter * 10) % 131 + 20) % 151,
-    #                   (g + (self.from_sun_energy_counter * 10) % 131 + 20) % 151,
-    #                   (b + (self.from_minerals_energy_counter * 10) % 131 + 20) % 151)
+    def change_color(self):
+        r, g, b = self.color
+        self.color = ((r + (self.from_cells_energy_counter * 10) % 131 + 20) % 151,
+                      (g + (self.from_sun_energy_counter * 10) % 131 + 20) % 151,
+                      (b + (self.from_minerals_energy_counter * 10) % 131 + 20) % 151)
 
     def bite(self):
         in_front_coords = self.in_front_position()
@@ -86,7 +92,17 @@ class Cell(pygame.sprite.Sprite):
             self.game.cells_field[in_front_coords[1]][in_front_coords[0]].kill()
             self.energy += energy_for_cell_eat
 
+    def find_next_action_id(self, genome_id, recursion_depth=0):
+        if recursion_depth == 50:
+            return None
+        if self.genome[genome_id] not in actions_costs.keys():
+            self.find_next_action_id((genome_id + self.genome[genome_id]) % 64, recursion_depth + 1)
+        else:
+            return genome_id
+
     def do_action(self, action_id):
+        if not isinstance(action_id, (numpy.int8, int)):
+            return
         try:
             if action_id in self.actions_dict.keys():
                 if self.actions_count - actions_costs[action_id] >= 0:
@@ -96,16 +112,20 @@ class Cell(pygame.sprite.Sprite):
                     else:
                         self.actions_dict[action_id]()
                     self.actions_count -= actions_costs[action_id]
-                    self.genome_id = (self.genome_id + 1) % 64
-                    self.do_action(self.genome[self.genome_id])
+                    next_action_id = self.find_next_action_id((self.genome_id + 1) % 64)
+                    self.genome_id = next_action_id
+                    self.do_action(self.genome[next_action_id])
                 else:
                     self.energy -= cell_energy_to_live
                     self.actions_count = cells_number_of_available_actions
             else:
-                self.genome_id = (self.genome_id + self.genome[(self.genome_id + 1) % 64]) % 64
-                self.do_action(self.genome[self.genome_id])
-        except RecursionError:
-            self.kill()
+                self.genome_id = (self.genome_id + self.genome[self.genome_id]) % 64
+                next_action_id = self.find_next_action_id(self.genome_id)
+                self.do_action(self.genome[next_action_id])
+
+        except RecursionError as ex:
+            print(ex)
+            # self.kill()
 
     def in_front_position(self):
         if self.degree == 0:
@@ -131,7 +151,7 @@ class Cell(pygame.sprite.Sprite):
 
     def get_self_energy(self):
         if self.energy < self.genome[(self.genome_id + 1) % 64]:
-            self.do_action(self.photosynthesize())
+            self.do_action(25)
 
     def look_in_front(self):
         coords = self.in_front_position()
@@ -199,7 +219,7 @@ class Cell(pygame.sprite.Sprite):
 
     def update(self, game):
         if self.energy >= self.max_energy:
-            # self.reproduce()
+            self.reproduce()
             pass
         elif self.energy <= 0:
             self.kill()
@@ -227,7 +247,7 @@ class Cell(pygame.sprite.Sprite):
         self.energy = start_cell_energy
 
         self.children_counter += 1
-        if self.children_counter == 3:
+        if self.children_counter == 2:
             self.kill()
 
     def photosynthesize(self):

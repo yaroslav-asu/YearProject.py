@@ -20,7 +20,7 @@ class DeadCell(pygame.sprite.Sprite):
         self.x = coords[1]
         self.y = coords[0]
         self.game.dead_cells_group.add(self)
-        self.color = (150, 150, 150)
+        self.color = [150, 150, 150]
         self.border_color = (80, 80, 80)
         self.image = pygame.Surface((10, 10))
         self.rect = pygame.Rect(self.x, self.y, 10, 10)
@@ -35,7 +35,7 @@ class DeadCell(pygame.sprite.Sprite):
 
 
 class Cell(pygame.sprite.Sprite):
-    def __init__(self, coords, game, parent=None, color=(20, 150, 20)):
+    def __init__(self, coords, game, parent=None, color=[20, 150, 20]):
         super().__init__()
         game.cells_group.add(self)
         self.x = coords[1]
@@ -80,10 +80,17 @@ class Cell(pygame.sprite.Sprite):
                 self.genome[randint(0, 63)] = randint(0, 63)
 
     def change_color(self):
-        r, g, b = self.color
-        self.color = ((r + (self.from_cells_energy_counter * 10) % 131 + 20) % 151,
-                      (g + (self.from_sun_energy_counter * 10) % 131 + 20) % 151,
-                      (b + (self.from_minerals_energy_counter * 10) % 131 + 20) % 151)
+        maximum_color_id = 0
+        colors = [self.from_cells_energy_counter,
+                  self.from_sun_energy_counter,
+                  self.from_minerals_energy_counter]
+        if any(colors):
+            for color_id in range(0, 3):
+                if colors[color_id] > colors[maximum_color_id]:
+                    maximum_color_id = color_id
+            self.color[maximum_color_id] = 150
+            for color_id in list({0, 1, 2} - {maximum_color_id}):
+                self.color[color_id] = colors[color_id] / colors[maximum_color_id] * 150
 
     def bite(self, recursion_counter):
         in_front_coords = self.in_front_position()
@@ -208,6 +215,7 @@ class Cell(pygame.sprite.Sprite):
             return None
 
     def update(self, game):
+        self.change_color()
         if self.energy >= self.max_energy:
             self.reproduce()
             pass

@@ -72,12 +72,12 @@ class Cell(pygame.sprite.Sprite):
             27: self.bite
         }
         if not parent:
-            self.genome = numpy.array([25 for i in range(64)], numpy.int8)
+            self.genome = numpy.array([randint(24, 25) for i in range(64)], numpy.int8)
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             self.genome = parent.genome.copy()
             if random() < 0.25:
-                self.genome[randint(0, 63)] = randint(0, 63)
+                self.genome[randint(0, 63)] = randint(1, 63)
 
     def change_color(self):
         maximum_color_id = 0
@@ -101,6 +101,7 @@ class Cell(pygame.sprite.Sprite):
 
     def do_action(self, action_id, recursion_counter=0):
         if recursion_counter > 15:
+            print('recdel')
             self.kill()
             return
         try:
@@ -149,6 +150,9 @@ class Cell(pygame.sprite.Sprite):
     def get_self_energy(self, recursion_counter):
         if self.energy < self.genome[(self.genome_id + 1) % 64]:
             self.do_action(25, recursion_counter + 1)
+        else:
+            self.genome_id = (self.genome_id + 1) % 64
+            self.do_action(self.genome_id, recursion_counter + 1)
 
     def look_in_front(self, recursion_counter):
         coords = self.in_front_position()

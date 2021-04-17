@@ -1,10 +1,7 @@
 import os
-import pprint
-import sys
-from random import randint, random
+from random import random
 
 import numpy
-import pygame
 
 from cells import Cell
 from variables import *
@@ -45,7 +42,7 @@ class CursorImage(pygame.Surface):
             if self.connected_cell.groups():
                 self.set_cursor_position((self.connected_cell.x * 10, self.connected_cell.y * 10))
             else:
-                interface_logic.window.clear_genome()
+                interface_logic.window.clear_window()
                 self.clear()
 
 
@@ -78,11 +75,15 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.fps = fps
-        self.energy_field = numpy.array([[energy_field_stats for i in range(window_width
-                                                                            // 10)]
-                                         for j in range(window_height // 10)])
-        self.cells_field = numpy.array([[None for i in range(window_width // 10)] for j in range(
-            window_height // 10)])
+        self.energy_field = numpy.array([[
+            {
+                'sun': 8 - j * 10 // 128,
+                'minerals': j * 10 // 128
+            }
+            for i in range(1800 // 10)]
+            for j in range(900 // 10)])
+        self.cells_field = numpy.array([[None for i in range(window_width // 10)]
+                                        for j in range(window_height // 10)])
         self.cells_field_image = CellsFieldImage()
         self.cursor_image = CursorImage()
         self.cells_group = SpriteGroup()
@@ -112,13 +113,17 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     os._exit(1)
+                if event.type == pygame.K_SPACE:
+                    print('asfd')
+                    with stop_lock:
+                        variables.stop = not variables.stop
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
                     clicked_sprites = [sprite for sprite in list(self.cells_group) +
                                        list(self.dead_cells_group)
                                        if sprite.rect.collidepoint(pos)]
                     if clicked_sprites:
-                        window.fill_genome_field(clicked_sprites[0])
+                        window.fill_window(clicked_sprites[0])
                         self.cursor_image.connect_cell(clicked_sprites[0])
 
             with stop_lock:

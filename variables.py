@@ -1,10 +1,11 @@
-import sys
 from threading import Lock
 
 import pygame
 
 window_width = 1800
 window_height = 900
+
+cell_size = 5
 
 cell_energy_to_live = 3
 energy_for_cell_eat = 6
@@ -18,7 +19,7 @@ actions_costs = {
     24: 5,  # получение энергии из минералов
     25: 5,  # фотосинтез
     26: 1,  # движение
-    27: 5
+    27: 5   # съесть клетку
 }
 
 energy_field_stats = {

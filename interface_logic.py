@@ -1,10 +1,7 @@
 import os
-
-import numpy as np
-
-from interface import Ui_MainWindow
-from PyQt5 import QtWidgets, uic, Qt, QtCore
 import sys
+
+from PyQt5 import QtWidgets, uic, QtCore
 
 
 # import variables
@@ -34,6 +31,20 @@ class Interface(QtWidgets.QMainWindow):
                 horizontal_layout.addWidget(qlabel)
             self.genomeLayout.addLayout(horizontal_layout)
 
+    def fill_window(self, sprite):
+        self.fill_genome_field(sprite)
+        self.fill_energy_labels(sprite)
+
+    def clear_window(self):
+        self.clear_genome_field()
+        self.clear_labels()
+
+    def fill_energy_labels(self, sprite):
+        self.eaten_cells_label.setText("Клеток съедено: " + str(sprite.from_cells_energy_counter))
+        self.sun_count_label.setText("Солнца поглащено: " + str(sprite.from_sun_energy_counter))
+        self.minerals_count_label.setText("Минералов поглащено: " +
+                                          str(sprite.from_minerals_energy_counter))
+
     def fill_genome_field(self, sprite):
         genome = sprite.genome.copy()
         genome.resize(8, 8)
@@ -42,10 +53,15 @@ class Interface(QtWidgets.QMainWindow):
             for j in range(self.genomeLayout.itemAt(i).count()):
                 self.genomeLayoutList[i][j].setText(str(genome[i][j]))
 
-    def clear_genome(self):
+    def clear_genome_field(self):
         for i in range(self.genomeLayout.count()):
             for j in range(self.genomeLayout.itemAt(i).count()):
                 self.genomeLayoutList[i][j].setText("")
+
+    def clear_labels(self):
+        self.eaten_cells_label.setText("")
+        self.sun_count_label.setText("")
+        self.minerals_count_label.setText("")
 
     def stop_game(self):
         from variables import stop_lock

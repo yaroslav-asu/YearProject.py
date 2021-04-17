@@ -5,7 +5,7 @@ import pygame
 window_width = 1800
 window_height = 900
 
-cell_size = 1
+cell_size = 5
 
 cell_energy_to_live = 3
 energy_for_cell_eat = 20

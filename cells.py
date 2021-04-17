@@ -48,7 +48,7 @@ class Cell(pygame.sprite.Sprite):
         self.genome_id: int = 0
         self.degree = randint(0, 7) * 45
         self.children_counter = 0
-        self.rec_counter = 0
+        self.recursion_counter = 0
 
         self.actions_count = cells_number_of_available_actions
         self.image = pygame.Surface((cell_size, cell_size))
@@ -73,24 +73,24 @@ class Cell(pygame.sprite.Sprite):
         }
 
         if not parent:
-            self.genome = numpy.array([randint(24, 25) for i in range(64)], numpy.int8)
+            self.genome = numpy.array([randint(1, 63) for i in range(64)], numpy.int8)
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
-            # self.genome = parent.genome.copy()
-            # if random() < 0.25:
-            #     self.genome[randint(0, 63)] = randint(1, 63)
-            main_genome = parent.genome.copy()
-            genome = main_genome.copy()
-            if random() < 0.9:
-                counter = 0
-                genome[randint(0, 63)] = randint(1, 63)
-                while self.check_recursion(genome):
-                    genome = main_genome.copy()
-                    genome[randint(0, 63)] = randint(1, 63)
-                    counter += 1
-                if counter:
-                    print(counter)
-            self.genome = genome
+            self.genome = parent.genome.copy()
+            if random() < 0.25:
+                self.genome[randint(0, 63)] = randint(1, 63)
+            # main_genome = parent.genome.copy()
+            # genome = main_genome.copy()
+            # if random() < 0.9:
+            #     counter = 0
+            #     genome[randint(0, 63)] = randint(1, 63)
+            #     while self.check_recursion(genome):
+            #         genome = main_genome.copy()
+            #         genome[randint(0, 63)] = randint(1, 63)
+            #         counter += 1
+            #     if counter:
+            #         print(counter)
+            # self.genome = genome
 
     @staticmethod
     def check_recursion(genome):
@@ -122,7 +122,7 @@ class Cell(pygame.sprite.Sprite):
             for color_id in list({0, 1, 2} - {maximum_color_id}):
                 self.color[color_id] = colors[color_id] / colors[maximum_color_id] * 150
 
-    def bite(self, recursion_counter):
+    def bite(self):
         in_front_coords = self.in_front_position()
         in_front_obj = self.get_object_from_coords(in_front_coords)
         if in_front_obj == 'Cell' or in_front_obj == 'DeadCell' or in_front_obj == 'FamilyCell':
@@ -130,7 +130,11 @@ class Cell(pygame.sprite.Sprite):
             self.energy += energy_for_cell_eat
             self.from_cells_energy_counter += 1
 
-    def do_action(self, action_id, recursion_counter=0):
+    def do_action(self, action_id):
+        self.recursion_counter += 1
+        if self.recursion_counter > 15:
+            self.kill()
+            return
         # if recursion_counter > 15:
         #     print('recdel')
         #     self.kill()
@@ -139,23 +143,42 @@ class Cell(pygame.sprite.Sprite):
             if action_id in self.actions_dict.keys():
                 if self.actions_count - actions_costs[action_id] >= 0:
                     if action_id == 23:
+                        self.recursion_counter += 1
+                        if self.recursion_counter > 15:
+                            self.kill()
+                            return
                         self.actions_dict[action_id]((self.genome[(self.genome_id + 1) % 64] % 8)
                                                      * 45)
                     else:
-                        self.actions_dict[action_id](recursion_counter)
+                        if self.recursion_counter > 15:
+                            self.kill()
+                            return
+                        self.actions_dict[action_id]()
+
                     self.actions_count -= actions_costs[action_id]
                     self.genome_id = (self.genome_id + 1) % 64
-                    self.do_action(self.genome[self.genome_id], recursion_counter + 1)
+                    if self.recursion_counter > 15:
+                        self.kill()
+                        return
+                    self.recursion_counter+=1
+                    self.do_action(self.genome[self.genome_id])
+
                 else:
                     self.energy -= cell_energy_to_live
                     self.actions_count = cells_number_of_available_actions
             else:
                 self.genome_id = (self.genome_id + self.genome[(self.genome_id + 1) % 64]) % 64
-                self.do_action(self.genome[self.genome_id], recursion_counter + 1)
+                if self.recursion_counter > 15:
+                    self.kill()
+                    return
+                self.recursion_counter+=1
+                self.do_action(self.genome[self.genome_id])
+
         except RecursionError:
-            print("recErr", recursion_counter)
+            print("recErr", self.recursion_counter)
             print(self.genome)
             self.kill()
+        # self.recursion_counter = 0
 
     def in_front_position(self):
         if self.degree == 0:
@@ -179,14 +202,22 @@ class Cell(pygame.sprite.Sprite):
     def change_degree(self, degree):
         self.degree = (self.degree + degree) % 360
 
-    def get_self_energy(self, recursion_counter):
+    def get_self_energy(self):
+        self.recursion_counter += 1
         if self.energy < self.genome[(self.genome_id + 1) % 64]:
-            self.do_action(25, recursion_counter + 1)
+            if self.recursion_counter > 15:
+                self.kill()
+                return
+            self.do_action(25)
         else:
             self.genome_id = (self.genome_id + 1) % 64
-            self.do_action(self.genome_id, recursion_counter + 1)
+            if self.recursion_counter > 15:
+                self.kill()
+                return
+            self.do_action(self.genome_id)
 
-    def look_in_front(self, recursion_counter):
+    def look_in_front(self):
+        self.recursion_counter+=1
         coords = self.in_front_position()
         in_front_obj = self.get_object_from_coords(*coords)
         if in_front_obj == 'Cell':
@@ -200,9 +231,12 @@ class Cell(pygame.sprite.Sprite):
         elif not in_front_obj:
             coefficient = 6
         action_id = self.genome[(self.genome_id + coefficient) % 64]
-        self.do_action(action_id, recursion_counter + 1)
+        if self.recursion_counter > 15:
+            self.kill()
+            return
+        self.do_action(action_id)
 
-    def move(self, recursion_counter):
+    def move(self):
         start_x, start_y = self.x, self.y
         self.change_degree((self.genome[(self.genome_id + 1) % 64] % 8) * 45)
         in_front_coords = self.in_front_position()
@@ -259,6 +293,7 @@ class Cell(pygame.sprite.Sprite):
             self.kill()
         # self.change_color()
         self.do_action(self.genome[self.genome_id])
+        self.recursion_counter = 0
 
     def reproduce(self):
         coords_list = []
@@ -284,11 +319,11 @@ class Cell(pygame.sprite.Sprite):
         if self.children_counter == 2:
             self.kill()
 
-    def photosynthesize(self, recursion_counter):
+    def photosynthesize(self):
         self.energy += self.game.energy_field[self.y][self.x]['sun']
         self.from_sun_energy_counter += 1
 
-    def get_energy_from_mineral(self, recursion_counter):
+    def get_energy_from_mineral(self):
         self.energy += self.game.energy_field[self.y][self.x]['minerals']
         self.from_minerals_energy_counter += 1
 

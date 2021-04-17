@@ -5,10 +5,10 @@ import pygame
 window_width = 1800
 window_height = 900
 
-cell_size = 5
+cell_size = 1
 
 cell_energy_to_live = 3
-energy_for_cell_eat = 6
+energy_for_cell_eat = 20
 # cells_commands = [25, 24, 26]
 
 cells_number_of_available_actions = 5

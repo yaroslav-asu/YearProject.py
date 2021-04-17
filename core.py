@@ -91,8 +91,8 @@ class Game:
         self.cells_group = SpriteGroup()
         self.dead_cells_group = SpriteGroup()
 
-        self.cells_field[80][100] = Cell((80, 100), self)
-        self.cells_field[20][100] = Cell((20, 100), self)
+        # self.cells_field[80][100] = Cell((80, 100), self)
+        # self.cells_field[20][100] = Cell((20, 100), self)
         # self.cells_field[10][10] = Cell((10, 10), self)
         # self.cells_field[11][10] = Cell((11, 10), self)
         # self.cells_field[10][11] = Cell((10, 11), self)
@@ -103,7 +103,7 @@ class Game:
     def generate_cells(self):
         for i in range(window_height // cell_size):
             for j in range(window_width // cell_size):
-                if random() < 0.0001:
+                if random() < 0.001:
                     self.cells_field[i][j] = Cell((i, j), self)
 
     def run(self):

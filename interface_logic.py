@@ -73,6 +73,13 @@ class Interface(QtWidgets.QMainWindow):
             if not variables.stop:
                 self.stopButton.setText("stop")
 
+    def fill_cells_count(self, game):
+        self.cells_count_on_field.setText("Количество клеток на поле: " + str(len(
+            game.cells_group)))
+
+    def update(self, game):
+        self.fill_cells_count(game)
+
     def closeEvent(self, event):
         os._exit(1)
         event.acept()

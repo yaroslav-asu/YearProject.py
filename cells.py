@@ -8,7 +8,7 @@ from variables import *
 def normalize_coords(*args):
     if len(args) == 1:
         args = args[0][0], args[0][1]
-    x = args[0] % (window_width // 10)
+    x = args[0] % (window_width // cell_size)
     y = args[1]
     return x, y
 
@@ -22,10 +22,10 @@ class DeadCell(pygame.sprite.Sprite):
         self.game.dead_cells_group.add(self)
         self.color = [150, 150, 150]
         self.border_color = (80, 80, 80)
-        self.image = pygame.Surface((10, 10))
-        self.rect = pygame.Rect(self.x, self.y, 10, 10)
-        pygame.draw.rect(self.image, self.border_color, (0, 0, 10, 10))
-        pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
+        self.image = pygame.Surface((cell_size, cell_size))
+        self.rect = pygame.Rect(self.x, self.y, cell_size, cell_size)
+        pygame.draw.rect(self.image, self.border_color, (0, 0, cell_size, cell_size))
+        pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
         self.game.cells_field_image.add(self.image, self.x, self.y)
 
     def kill(self):
@@ -51,10 +51,10 @@ class Cell(pygame.sprite.Sprite):
         self.rec_counter = 0
 
         self.actions_count = cells_number_of_available_actions
-        self.image = pygame.Surface((10, 10))
+        self.image = pygame.Surface((cell_size, cell_size))
         create_border(self.image, self.border_color)
-        pygame.draw.rect(self.image, self.color, (1, 1, 8, 8))
-        self.rect = pygame.Rect(self.x * 10, self.y * 10, 10, 10)
+        pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
+        self.rect = pygame.Rect(self.x * cell_size, self.y * cell_size, cell_size, cell_size)
 
         self.game.cells_field_image.add(self.image, self.x, self.y)
 
@@ -178,7 +178,7 @@ class Cell(pygame.sprite.Sprite):
             self.x, self.y = in_front_coords
         if start_x != self.x or start_y != self.y:
             self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
-            self.rect.x, self.rect.y = self.x * 10, self.y * 10
+            self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self
 
@@ -188,8 +188,8 @@ class Cell(pygame.sprite.Sprite):
         else:
             x, y = args[0], args[1]
 
-        if 0 <= y < window_height // 10 and \
-            not self.get_object_from_coords(x % (window_width // 10), y):
+        if 0 <= y < window_height // cell_size and \
+            not self.get_object_from_coords(x % (window_width // cell_size), y):
             return True
         else:
             return False
@@ -200,7 +200,7 @@ class Cell(pygame.sprite.Sprite):
         else:
             x, y = args[0], args[1]
 
-        if y < 0 or y >= (window_height // 10):
+        if y < 0 or y >= (window_height // cell_size):
             return 'Wall'
         if isinstance(self.game.cells_field[y][x], Cell):
             counter = 0
@@ -231,7 +231,7 @@ class Cell(pygame.sprite.Sprite):
     def reproduce(self):
         coords_list = []
         for i in range(0, 2):
-            x = (self.x + (-1) ** i + window_width // 10) % (window_width // 10)
+            x = (self.x + (-1) ** i + window_width // cell_size) % (window_width // cell_size)
             y = self.y + (-1) ** i
             if self.can_move(x, self.y):
                 coords_list.append((self.y, x))

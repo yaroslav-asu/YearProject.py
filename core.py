@@ -19,7 +19,7 @@ class CursorImage(pygame.Surface):
     def __init__(self):
         super().__init__((window_width, window_height))
         self.color = (255, 255, 0)
-        self.cursor_image = pygame.Surface((10, 10))
+        self.cursor_image = pygame.Surface((cell_size, cell_size))
         # pygame.draw.rect(self.cursor_image, self.color, (0, 0, 10, 10))
         create_border(self.cursor_image, self.color)
         self.set_colorkey((0, 0, 0))
@@ -34,13 +34,15 @@ class CursorImage(pygame.Surface):
 
     def set_cursor_position(self, coords):
         self.fill((0, 0, 0))
-        self.blit(self.cursor_image, (coords[0] // 10 * 10, coords[1] // 10 * 10, 10, 10))
+        self.blit(self.cursor_image, (coords[0] // cell_size * cell_size, coords[1] // cell_size
+                                      * cell_size,
+                                      cell_size, cell_size))
 
     def update(self):
         import interface_logic
         if self.connected_cell:
             if self.connected_cell.groups():
-                self.set_cursor_position((self.connected_cell.x * 10, self.connected_cell.y * 10))
+                self.set_cursor_position((self.connected_cell.x * cell_size, self.connected_cell.y * cell_size))
             else:
                 interface_logic.window.clear_window()
                 self.clear()
@@ -51,7 +53,7 @@ class CellsFieldImage(pygame.Surface):
         super().__init__((window_width, window_height))
         self.color = (140, 140, 140)
         self.fill(self.color)
-        self.grey_square = pygame.Surface((10, 10))
+        self.grey_square = pygame.Surface((cell_size, cell_size))
         self.grey_square.fill(self.color)
 
     def move(self, start_x, start_y, end_x, end_y, image):
@@ -59,10 +61,10 @@ class CellsFieldImage(pygame.Surface):
         self.add(image, end_x, end_y)
 
     def add(self, image, x, y):
-        self.blit(image, pygame.Rect(x * 10, y * 10, 10, 10))
+        self.blit(image, pygame.Rect(x * cell_size, y * cell_size, cell_size, cell_size))
 
     def delete(self, x, y):
-        self.blit(self.grey_square, pygame.Rect(x * 10, y * 10, 10, 10))
+        self.blit(self.grey_square, pygame.Rect(x * cell_size, y * cell_size, cell_size, cell_size))
 
 
 class Game:
@@ -77,13 +79,13 @@ class Game:
         self.fps = fps
         self.energy_field = numpy.array([[
             {
-                'sun': 8 - j * 10 // 128,
-                'minerals': j * 10 // 128
+                'sun': 8 - j * cell_size // 128,
+                'minerals': j * cell_size // 128
             }
-            for i in range(1800 // 10)]
-            for j in range(900 // 10)])
-        self.cells_field = numpy.array([[None for i in range(window_width // 10)]
-                                        for j in range(window_height // 10)])
+            for i in range(1800 // cell_size)]
+            for j in range(900 // cell_size)])
+        self.cells_field = numpy.array([[None for i in range(window_width // cell_size)]
+                                        for j in range(window_height // cell_size)])
         self.cells_field_image = CellsFieldImage()
         self.cursor_image = CursorImage()
         self.cells_group = SpriteGroup()
@@ -99,8 +101,8 @@ class Game:
         self.generate_cells()
 
     def generate_cells(self):
-        for i in range(window_height // 10):
-            for j in range(window_width // 10):
+        for i in range(window_height // cell_size):
+            for j in range(window_width // cell_size):
                 if random() < 0.0001:
                     self.cells_field[i][j] = Cell((i, j), self)
 
@@ -140,6 +142,7 @@ class Game:
 
             self.draw()
             self.update()
+            window.update(self)
             # self.previous_cells_field = self.cells_field
 
             self.clock.tick(self.fps)

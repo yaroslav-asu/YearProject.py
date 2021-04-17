@@ -22,10 +22,10 @@ actions_costs = {
     27: 5   # съесть клетку
 }
 
-energy_field_stats = {
-    'sun': 5,
-    'minerals': 4
-}
+# energy_field_stats = {
+#     'sun': 5,
+#     'minerals': 4
+# }
 
 start_cell_energy = 50
 max_cell_energy = 100
@@ -36,5 +36,7 @@ fps = 1000
 
 
 def create_border(image, color):
-    for pos in [((0, 0), (9, 0)), ((9, 0), (9, 9)), ((9, 9), (0, 9)), ((0, 9), (0, 0))]:
+    for pos in [((0, 0), (cell_size - 1, 0)), ((cell_size - 1, 0), (cell_size - 1, cell_size - 1)),
+                ((cell_size - 1, cell_size - 1), (0, cell_size - 1)), ((0,  cell_size - 1), (0,
+                                                                                             0))]:
         pygame.draw.line(image, color, *pos, 1)

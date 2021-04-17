@@ -150,6 +150,13 @@
        </spacer>
       </item>
       <item>
+       <widget class="QLabel" name="cells_count_on_field">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="stopButton">
         <property name="text">
          <string>stop</string>

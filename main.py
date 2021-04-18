@@ -1,48 +1,44 @@
+import ctypes.wintypes
 import os
 import sys
-from multiprocessing import Process
+from multiprocessing import Process, Array
 from multiprocessing import Queue, Pipe
 
+import numpy as np
 import pygame
 
 # pyximport.install()
 from core import Game, start_game
 from screen_core import CellsFieldImage
-from variables import window_width, window_height
+from variables import window_width, window_height, cells_data, shared_array
 
-FPS = 1000
-cells_field_image = CellsFieldImage()
+cells_field_image = CellsFieldImage(cells_data)
 parent_conn, child_conn = Pipe()
 
-
 # def get_from_queue():
-#     return screen_game_queue.get()
-def get_from_queue():
-    # if parent_conn.poll(1/FPS):
-    return parent_conn.recv()
-    # else:
-    #     print('no data')
+#     return parent_conn.recv()
 
 
-def do_actions():
-    global cells_field_image
-    responce = get_from_queue()
-    if responce:
-        if responce[0] == "add_cell_to_screen":
-            cells_field_image.add(*responce[1])
-        elif responce[0] == "delete_cell_from_screen":
-            cells_field_image.delete(*responce[1])
-        elif responce[0] == "move_cell_on_screen":
-            cells_field_image.move(*responce[1])
-        else:
-            print("request_exception")
+# def do_actions():
+#     global cells_field_image
+#     responce = get_from_queue()
+#     if responce:
+#         if responce[0] == "add_cell_to_screen":
+#             cells_field_image.add(*responce[1])
+#         elif responce[0] == "delete_cell_from_screen":
+#             cells_field_image.delete(*responce[1])
+#         elif responce[0] == "move_cell_on_screen":
+#             cells_field_image.move(*responce[1])
+#         else:
+#             print("request_exception")
 
 
 if __name__ == "__main__":
-    FLIP_INTERVAL = 120
+    FPS = 120
+    FLIP_INTERVAL = 3
     # screen_game_queue = Queue()
 
-    game_process = Process(target=start_game, args=(child_conn,))
+    game_process = Process(target=start_game, args=(shared_array,))
     game_process.start()
     pygame.init()
     pygame.mixer.init()
@@ -58,10 +54,9 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
 
-        do_actions()
-        # clock.tick(FPS)
+        # do_actions()
+        clock.tick(FPS)
         if counter >= FLIP_INTERVAL:
-
             screen.blit(cells_field_image, (0, 0))
             cells_field_image.render()
 

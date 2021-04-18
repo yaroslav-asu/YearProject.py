@@ -1,7 +1,9 @@
+import ctypes
 from threading import Lock
-from multiprocessing import Queue
-import pygame
+from multiprocessing import Queue, Array
 
+import numpy as np
+import pygame
 
 window_width = 1800
 window_height = 900
@@ -20,7 +22,7 @@ actions_costs = {
     24: 5,  # получение энергии из минералов
     25: 5,  # фотосинтез
     26: 1,  # движение
-    27: 5   # съесть клетку
+    27: 5  # съесть клетку
 }
 
 # energy_field_stats = {
@@ -38,6 +40,29 @@ fps = 10
 
 def create_border(image, color):
     for pos in [((0, 0), (cell_size - 1, 0)), ((cell_size - 1, 0), (cell_size - 1, cell_size - 1)),
-                ((cell_size - 1, cell_size - 1), (0, cell_size - 1)), ((0,  cell_size - 1), (0,
-                                                                                             0))]:
+                ((cell_size - 1, cell_size - 1), (0, cell_size - 1)), ((0, cell_size - 1), (0,
+                                                                                            0))]:
         pygame.draw.line(image, color, *pos, 1)
+
+
+base_color = (140, 140, 140)
+
+
+"""
+Инициализация массива, доступного между различными процессами
+"""
+array_size = (window_width // cell_size, window_height // cell_size, 5)
+shared_array = Array(ctypes.c_int64, (array_size[0] * array_size[1] * array_size[2]))
+_numpy_shared = np.frombuffer(shared_array.get_obj())
+
+cells_data = _numpy_shared.reshape(array_size)
+# заполнение массива базовым цветом
+for x, row in enumerate(cells_data):
+    for y, cell in enumerate(row):
+        cells_data[x, y] = (*base_color, x, y)
+
+
+def create_numpy_cell_data(shared_array:Array):
+    _numpy_shared = np.frombuffer(shared_array.get_obj())
+    cells_data = _numpy_shared.reshape(array_size)
+    return cells_data

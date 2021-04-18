@@ -14,8 +14,9 @@ def normalize_coords(*args):
 
 
 class DeadCell(pygame.sprite.Sprite):
-    def __init__(self, coords, game):
+    def __init__(self, coords, game, cells_data: np.ndarray):
         super().__init__()
+
         self.game = game
         self.x = coords[1]
         self.y = coords[0]
@@ -27,20 +28,24 @@ class DeadCell(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, self.border_color, (0, 0, cell_size, cell_size))
         pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
         # self.game.cells_field_image.add(self.image, self.x, self.y)
-        self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
-                                                      self.y)))
+        # self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
+        #                                                     self.y)))
+
+        self.cells_data = cells_data
+        self.cells_data[self.x, self.y] = (*self.color, self.x, self.y)
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None
         # self.game.cells_field_image.delete(self.x, self.y)
-        self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
+        # self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
+        self.cells_data[self.x, self.y] = (*base_color, self.x, self.y)
         super().kill()
 
 
 class Cell(pygame.sprite.Sprite):
     genome: numpy.array
 
-    def __init__(self, coords, game, parent=None, color=[20, 150, 20]):
+    def __init__(self, coords, game, parent=None, color=[20, 150, 20], cells_data: np.ndarray = None):
         super().__init__()
         game.cells_group.add(self)
         self.x = coords[1]
@@ -62,8 +67,12 @@ class Cell(pygame.sprite.Sprite):
         self.rect = pygame.Rect(self.x * cell_size, self.y * cell_size, cell_size, cell_size)
 
         # self.game.cells_field_image.add(self.image, self.x, self.y)
-        self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
-                                                     self.y)))
+        # self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
+        #                                                     self.y)))
+        # для рендеринга
+        self.cells_data = cells_data
+        self.cells_data[self.x, self.y] = (*self.color, self.x, self.y)
+
         self.from_sun_energy_counter = 0
         self.from_cells_energy_counter = 0
         self.from_minerals_energy_counter = 0
@@ -220,9 +229,12 @@ class Cell(pygame.sprite.Sprite):
             self.x, self.y = in_front_coords
         if start_x != self.x or start_y != self.y:
             # self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
-            self.game.screen_queue.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
-                                                                self.color, self.border_color
-                                                                )))
+            # self.game.screen_queue.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
+            #                                                      self.color, self.border_color
+            #                                                      )))
+            self.cells_data[self.x, self.y] = (*base_color, start_x, start_x)
+            self.cells_data[self.x, self.y] = (*self.color, self.x, self.y)
+
             self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self
@@ -234,7 +246,7 @@ class Cell(pygame.sprite.Sprite):
             x, y = args[0], args[1]
 
         if 0 <= y < window_height // cell_size and \
-            not self.get_object_from_coords(x % (window_width // cell_size), y):
+                not self.get_object_from_coords(x % (window_width // cell_size), y):
             return True
         else:
             return False
@@ -286,11 +298,12 @@ class Cell(pygame.sprite.Sprite):
         if len(coords_list):
             coords = coords_list[randint(0, len(coords_list) - 1)]
             self.game.cells_field[coords[0]][coords[1]] = \
-                Cell([coords[0], coords[1]], self.game, self, self.color)
+                Cell([coords[0], coords[1]], self.game, self, self.color, cells_data=self.cells_data)
         else:
             self.game.cells_group.remove(self)
             # super().kill()
-            self.game.cells_field[self.y][self.x] = DeadCell((self.y, self.x), self.game)
+            self.game.cells_field[self.y][self.x] = DeadCell((self.y, self.x), self.game,
+                                                             cells_data=self.cells_data)
             return
         self.energy = start_cell_energy
 
@@ -308,5 +321,6 @@ class Cell(pygame.sprite.Sprite):
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None
-        self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
+        # self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
+        self.cells_data[self.x, self.y] = (*base_color, self.x, self.y)
         super().kill()

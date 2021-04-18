@@ -68,14 +68,15 @@ class CellsFieldImage(pygame.Surface):
 
 
 class Game:
-    def __init__(self, screen_queue):
+    def __init__(self, cells_data: np.ndarray):
         # pygame.init()
         # pygame.mixer.init()
         #
         # pygame.display.set_caption("My Game")
         # self.screen = pygame.display.set_mode((window_width, window_height))
         # self.clock = pygame.time.Clock()
-        self.screen_queue = screen_queue
+        self.cells_data = cells_data
+        # self.screen_queue = screen_queue
         self.running = True
         self.fps = fps
         self.energy_field = numpy.array([[
@@ -92,7 +93,7 @@ class Game:
         self.cells_group = SpriteGroup()
         self.dead_cells_group = SpriteGroup()
 
-        self.cells_field[80][100] = Cell((80, 100), self)
+        self.cells_field[80][100] = Cell((80, 100), self, cells_data=self.cells_data)
         # self.cells_field[20][100] = Cell((20, 100), self)
         # self.cells_field[10][10] = Cell((10, 10), self)
         # self.cells_field[11][10] = Cell((11, 10), self)
@@ -105,7 +106,7 @@ class Game:
         for i in range(window_height // cell_size):
             for j in range(window_width // cell_size):
                 if random() < 0.1:
-                    self.cells_field[i][j] = Cell((i, j), self)
+                    self.cells_field[i][j] = Cell((i, j), self, cells_data=self.cells_data)
 
     def runn(self):
         print('game_started')
@@ -157,6 +158,7 @@ class Game:
         pass
 
 
-def start_game(queue):
-    game = Game(queue)
+def start_game(shared_array):
+    cells_data = create_numpy_cell_data(shared_array)
+    game = Game(cells_data)
     game.runn()

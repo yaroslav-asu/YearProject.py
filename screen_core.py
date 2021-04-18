@@ -47,14 +47,11 @@ class CellsFieldImage(pygame.Surface):
 
     cells_cache = {}
 
-    def __init__(self):
+    def __init__(self, cell_data: np.ndarray):
         super().__init__((window_width, window_height))
         self.fill(self.color)
 
-        self.cells_data = np.zeros((window_width // cell_size, window_height // cell_size, 5), dtype=np.int32)
-        for x, row in enumerate(self.cells_data):
-            for y, cell in enumerate(row):
-                self.cells_data[x, y] = (*self.color, x, y)
+        self.cells_data = cell_data
 
         self.render_cache = None
 
@@ -66,13 +63,14 @@ class CellsFieldImage(pygame.Surface):
         self.cells_data[x, y] = (*center_color, x, y)
 
     def delete(self, x, y):
-        # self.blit(self.grey_square, (x * cell_size, y * cell_size))
         self.cells_data[x, y] = (*self.color, x, y)
 
     @staticmethod
     def find_diff(arr1, arr2):
         color_sum1 = (arr1[:, :, 0] + arr1[:, :, 1] + arr1[:, :, 2])
         color_sum2 = (arr2[:, :, 0] + arr2[:, :, 1] + arr2[:, :, 2])
+
+        # noinspection PyTypeChecker
         diff_map: np.ndarray = color_sum1 != color_sum2
 
         diff = arr1[diff_map == True]

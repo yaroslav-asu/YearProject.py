@@ -38,6 +38,8 @@ class DeadCell(pygame.sprite.Sprite):
 
 
 class Cell(pygame.sprite.Sprite):
+    genome: numpy.array
+
     def __init__(self, coords, game, parent=None, color=[20, 150, 20]):
         super().__init__()
         game.cells_group.add(self)

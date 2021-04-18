@@ -68,6 +68,8 @@ if __name__ == "__main__":
             counter = 0
         counter += 1
 
+    game_process.kill()
+    pygame.quit()
 
     # game.run()
     # game_screen.cells_field_image.add((0, 0, 0), (0, 0, 0), 0, 0)
@@ -84,4 +86,4 @@ if __name__ == "__main__":
     # interface_logic.run_interface()
     # thread2.join()
 
-pygame.quit()
+

@@ -38,25 +38,35 @@ class CursorImage(pygame.Surface):
 
 
 class CellsFieldImage(pygame.Surface):
+    color = (140, 140, 140)
+    grey_square = pygame.Surface((cell_size, cell_size))
+    grey_square.fill(color)
+
+    cells_cache = {}
+
     def __init__(self):
         super().__init__((window_width, window_height))
-        self.color = (140, 140, 140)
         self.fill(self.color)
-        self.grey_square = pygame.Surface((cell_size, cell_size))
-        self.grey_square.fill(self.color)
 
     def move(self, start_x, start_y, end_x, end_y, center_color, border_color):
         self.delete(start_x, start_y)
         self.add(center_color, border_color, end_x, end_y)
 
     def add(self, center_color, border_color, x, y):
-        cell_image = pygame.Surface((cell_size, cell_size))
-        create_border(cell_image, border_color)
-        pygame.draw.rect(cell_image, center_color, (1, 1, cell_size - 1, cell_size - 1))
-        self.blit(cell_image, pygame.Rect(x * cell_size, y * cell_size, cell_size, cell_size))
+        center_color = tuple(center_color)
+        cached_cell = self.cells_cache.get(center_color)
+        if cached_cell:
+            self.blit(cached_cell, (x * cell_size, y * cell_size))
+        else:
+            cell_image = pygame.Surface((cell_size, cell_size))
+            create_border(cell_image, border_color)
+            pygame.draw.rect(cell_image, center_color, (1, 1, cell_size - 1, cell_size - 1))
+            self.blit(cell_image, (x * cell_size, y * cell_size))
+
+            self.cells_cache[center_color] = cell_image
 
     def delete(self, x, y):
-        self.blit(self.grey_square, pygame.Rect(x * cell_size, y * cell_size, cell_size, cell_size))
+        self.blit(self.grey_square, (x * cell_size, y * cell_size))
 
 
 class GameScreen:

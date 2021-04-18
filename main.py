@@ -39,7 +39,7 @@ def do_actions():
 
 
 if __name__ == "__main__":
-    FLIP_INTERVAL = 240
+    FLIP_INTERVAL = 120
     # screen_game_queue = Queue()
 
     game_process = Process(target=start_game, args=(child_conn,))
@@ -54,8 +54,6 @@ if __name__ == "__main__":
 
     counter = 0
     while running:
-        # print(parent_conn.__sizeof__())
-        screen.blit(cells_field_image, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -63,6 +61,8 @@ if __name__ == "__main__":
         do_actions()
         # clock.tick(FPS)
         if counter >= FLIP_INTERVAL:
+
+            screen.blit(cells_field_image, (0, 0))
             cells_field_image.render()
 
             pygame.display.flip()

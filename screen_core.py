@@ -87,26 +87,29 @@ class CellsFieldImage(pygame.Surface):
 
         cached_cell = self.cells_cache.get(cell_color)
         if cached_cell:
-            self.blit(cached_cell, (x * cell_size, y * cell_size))
+            return cached_cell, (x * cell_size, y * cell_size)
         else:
             cell_image = pygame.Surface((cell_size, cell_size))
             create_border(cell_image, BORDER_COLOR)
             pygame.draw.rect(cell_image, cell_color, (1, 1, cell_size - 1, cell_size - 1))
 
-            self.blit(cell_image, (x * cell_size, y * cell_size))
-
             self.cells_cache[cell_color] = cell_image
 
+            return cell_image, (x * cell_size, y * cell_size)
+
     def render(self):
+        to_blit = []
         if self.render_cache is not None:
             changed_cells = self.find_diff(self.cells_data, self.render_cache)
             for cell_info in changed_cells:
-                self.render_cell(cell_info)
+                to_blit.append(self.render_cell(cell_info))
 
         else:
             for row in self.cells_data:
                 for cell_info in row:
-                    self.render_cell(cell_info)
+                    to_blit.append(self.render_cell(cell_info))
+
+        self.blits(to_blit)
 
         self.render_cache = self.cells_data.copy()
 

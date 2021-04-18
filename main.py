@@ -9,13 +9,19 @@ from core import Game, start_game
 from screen_core import CellsFieldImage
 from variables import window_width, window_height
 
+FPS = 1000
 cells_field_image = CellsFieldImage()
 parent_conn, child_conn = Pipe()
+
 
 # def get_from_queue():
 #     return screen_game_queue.get()
 def get_from_queue():
+    # if parent_conn.poll(1/FPS):
     return parent_conn.recv()
+    # else:
+    #     print('no data')
+
 
 def do_actions():
     global cells_field_image
@@ -32,7 +38,7 @@ def do_actions():
 
 
 if __name__ == "__main__":
-
+    FLIP_INTERVAL = 120
     # screen_game_queue = Queue()
 
     game_process = Process(target=start_game, args=(child_conn,))
@@ -45,21 +51,23 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
     running = True
 
-    # counter = 0
+    counter = 0
     while running:
-        print(parent_conn.__sizeof__())
+        # print(parent_conn.__sizeof__())
         screen.blit(cells_field_image, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                # os._exit(1)
-            # print(screen_game_queue.qsize())
-        # print()
+
+
+
         do_actions()
-        # clock.tick(1000)
-        pygame.display.flip()
-        # counter += 1
-        # print("screen_running", counter)
+        # clock.tick(FPS)
+        if counter >= FLIP_INTERVAL:
+            pygame.display.flip()
+            counter = 0
+        counter += 1
+
 
     # game.run()
     # game_screen.cells_field_image.add((0, 0, 0), (0, 0, 0), 0, 0)

@@ -1,4 +1,5 @@
 import os
+import sys
 from multiprocessing import Process
 from multiprocessing import Queue, Pipe
 
@@ -38,7 +39,7 @@ def do_actions():
 
 
 if __name__ == "__main__":
-    FLIP_INTERVAL = 120
+    FLIP_INTERVAL = 240
     # screen_game_queue = Queue()
 
     game_process = Process(target=start_game, args=(child_conn,))
@@ -59,11 +60,11 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
 
-
-
         do_actions()
         # clock.tick(FPS)
         if counter >= FLIP_INTERVAL:
+            cells_field_image.render()
+
             pygame.display.flip()
             counter = 0
         counter += 1
@@ -85,5 +86,3 @@ if __name__ == "__main__":
     # # thread1.join()
     # interface_logic.run_interface()
     # thread2.join()
-
-

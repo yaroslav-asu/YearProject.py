@@ -1,4 +1,3 @@
-import os
 from random import random
 
 import numpy
@@ -42,7 +41,8 @@ class CursorImage(pygame.Surface):
         import interface_logic
         if self.connected_cell:
             if self.connected_cell.groups():
-                self.set_cursor_position((self.connected_cell.x * cell_size, self.connected_cell.y * cell_size))
+                self.set_cursor_position(
+                    (self.connected_cell.x * cell_size, self.connected_cell.y * cell_size))
             else:
                 interface_logic.window.clear_window()
                 self.clear()
@@ -68,13 +68,14 @@ class CellsFieldImage(pygame.Surface):
 
 
 class Game:
-    def __init__(self):
-        pygame.init()
-        pygame.mixer.init()
-
-        pygame.display.set_caption("My Game")
-        self.screen = pygame.display.set_mode((window_width, window_height))
-        self.clock = pygame.time.Clock()
+    def __init__(self, screen_queue):
+        # pygame.init()
+        # pygame.mixer.init()
+        #
+        # pygame.display.set_caption("My Game")
+        # self.screen = pygame.display.set_mode((window_width, window_height))
+        # self.clock = pygame.time.Clock()
+        self.screen_queue = screen_queue
         self.running = True
         self.fps = fps
         self.energy_field = numpy.array([[
@@ -86,12 +87,12 @@ class Game:
             for j in range(900 // cell_size)])
         self.cells_field = numpy.array([[None for i in range(window_width // cell_size)]
                                         for j in range(window_height // cell_size)])
-        self.cells_field_image = CellsFieldImage()
-        self.cursor_image = CursorImage()
+        # self.cells_field_image = CellsFieldImage()
+        # self.cursor_image = CursorImage()
         self.cells_group = SpriteGroup()
         self.dead_cells_group = SpriteGroup()
 
-        # self.cells_field[80][100] = Cell((80, 100), self)
+        self.cells_field[80][100] = Cell((80, 100), self)
         # self.cells_field[20][100] = Cell((20, 100), self)
         # self.cells_field[10][10] = Cell((10, 10), self)
         # self.cells_field[11][10] = Cell((11, 10), self)
@@ -103,50 +104,50 @@ class Game:
     def generate_cells(self):
         for i in range(window_height // cell_size):
             for j in range(window_width // cell_size):
-                if random() < 0.001:
+                if random() < 0.1:
                     self.cells_field[i][j] = Cell((i, j), self)
 
-    def run(self):
-        import variables
-        from interface_logic import window
-        while self.running:
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                    os._exit(1)
-                if event.type == pygame.K_SPACE:
-                    print('asfd')
-                    with stop_lock:
-                        variables.stop = not variables.stop
-                if event.type == pygame.MOUSEBUTTONUP:
-                    pos = pygame.mouse.get_pos()
-                    clicked_sprites = [sprite for sprite in list(self.cells_group) +
-                                       list(self.dead_cells_group)
-                                       if sprite.rect.collidepoint(pos)]
-                    if clicked_sprites:
-                        window.fill_window(clicked_sprites[0])
-                        self.cursor_image.connect_cell(clicked_sprites[0])
-
-            with stop_lock:
-                if variables.stop:
-                    self.screen.blit(self.cells_field_image, (0, 0))
-                    self.screen.blit(self.cursor_image, (0, 0))
-                    self.cursor_image.update()
-                    self.clock.tick(self.fps)
-                    pygame.display.flip()
-                    continue
-            self.screen.blit(self.cells_field_image, (0, 0))
-            self.screen.blit(self.cursor_image, (0, 0))
-            self.cursor_image.update()
-
-            self.draw()
+    def runn(self):
+        print('game_started')
+        while True:
             self.update()
-            window.update(self)
+
+            # for event in pygame.event.get():
+            #     if event.type == pygame.QUIT:
+            #         self.running = False
+            #         os._exit(1)
+            #     if event.type == pygame.K_SPACE:
+            #         with stop_lock:
+            #             variables.stop = not variables.stop
+            #     if event.type == pygame.MOUSEBUTTONUP:
+            #         pos = pygame.mouse.get_pos()
+            #         clicked_sprites = [sprite for sprite in list(self.cells_group) +
+            #                            list(self.dead_cells_group)
+            #                            if sprite.rect.collidepoint(pos)]
+            #         if clicked_sprites:
+            #             window.fill_window(clicked_sprites[0])
+            #             self.cursor_image.connect_cell(clicked_sprites[0])
+
+            # with stop_lock:
+            #     if variables.stop:
+            #         self.screen.blit(self.cells_field_image, (0, 0))
+            #         self.screen.blit(self.cursor_image, (0, 0))
+            #         self.cursor_image.update()
+            #         self.clock.tick(self.fps)
+            #         pygame.display.flip()
+            #         continue
+
+            # self.screen.blit(self.cells_field_image, (0, 0))
+            # self.screen.blit(self.cursor_image, (0, 0))
+            # self.cursor_image.update()
+
+            # self.draw()
+
+            # window.update(self)
             # self.previous_cells_field = self.cells_field
 
-            self.clock.tick(self.fps)
-            pygame.display.flip()
+            # self.clock.tick(self.fps)
+            # pygame.display.flip()
 
     def update(self):
         for cell in self.cells_group:
@@ -154,3 +155,8 @@ class Game:
 
     def draw(self):
         pass
+
+
+def start_game(queue):
+    game = Game(queue)
+    game.runn()

@@ -26,11 +26,14 @@ class DeadCell(pygame.sprite.Sprite):
         self.rect = pygame.Rect(self.x, self.y, cell_size, cell_size)
         pygame.draw.rect(self.image, self.border_color, (0, 0, cell_size, cell_size))
         pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
-        self.game.cells_field_image.add(self.image, self.x, self.y)
+        # self.game.cells_field_image.add(self.image, self.x, self.y)
+        self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
+                                                      self.y)))
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None
-        self.game.cells_field_image.delete(self.x, self.y)
+        # self.game.cells_field_image.delete(self.x, self.y)
+        self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
         super().kill()
 
 
@@ -56,8 +59,9 @@ class Cell(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
         self.rect = pygame.Rect(self.x * cell_size, self.y * cell_size, cell_size, cell_size)
 
-        self.game.cells_field_image.add(self.image, self.x, self.y)
-
+        # self.game.cells_field_image.add(self.image, self.x, self.y)
+        self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
+                                                     self.y)))
         self.from_sun_energy_counter = 0
         self.from_cells_energy_counter = 0
         self.from_minerals_energy_counter = 0
@@ -120,7 +124,7 @@ class Cell(pygame.sprite.Sprite):
                     maximum_color_id = color_id
             self.color[maximum_color_id] = 150
             for color_id in list({0, 1, 2} - {maximum_color_id}):
-                self.color[color_id] = colors[color_id] / colors[maximum_color_id] * 150
+                self.color[color_id] = int(colors[color_id] / colors[maximum_color_id] * 150)
 
     def bite(self):
         in_front_coords = self.in_front_position()
@@ -213,7 +217,10 @@ class Cell(pygame.sprite.Sprite):
         if self.can_move(in_front_coords):
             self.x, self.y = in_front_coords
         if start_x != self.x or start_y != self.y:
-            self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
+            # self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
+            self.game.screen_queue.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
+                                                                self.color, self.border_color
+                                                                )))
             self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self
@@ -299,5 +306,5 @@ class Cell(pygame.sprite.Sprite):
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None
-        self.game.cells_field_image.delete(self.x, self.y)
+        self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
         super().kill()

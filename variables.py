@@ -1,6 +1,7 @@
 from threading import Lock
-
+from multiprocessing import Queue
 import pygame
+
 
 window_width = 1800
 window_height = 900
@@ -32,7 +33,7 @@ max_cell_energy = 100
 
 stop_lock = Lock()
 stop = False
-fps = 1000
+fps = 10
 
 
 def create_border(image, color):

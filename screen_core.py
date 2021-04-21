@@ -99,15 +99,15 @@ class CellsFieldImage(pygame.Surface):
 
     def render(self):
         to_blit = []
-        if self.render_cache is not None:
-            changed_cells = self.find_diff(self.cells_data, self.render_cache)
-            for cell_info in changed_cells:
+        # if self.render_cache is not None:
+        #     changed_cells = self.find_diff(self.cells_data, self.render_cache)
+        #     for cell_info in changed_cells:
+        #         to_blit.append(self.render_cell(cell_info))
+        #
+        # else:
+        for row in self.cells_data:
+            for cell_info in row:
                 to_blit.append(self.render_cell(cell_info))
-
-        else:
-            for row in self.cells_data:
-                for cell_info in row:
-                    to_blit.append(self.render_cell(cell_info))
 
         self.blits(to_blit)
 

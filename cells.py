@@ -165,6 +165,7 @@ class Cell(pygame.sprite.Sprite):
             print("recErr", self.recursion_counter)
             print(self.genome)
             self.kill()
+            return
         # self.recursion_counter = 0
 
     def in_front_position(self):
@@ -298,6 +299,7 @@ class Cell(pygame.sprite.Sprite):
         self.children_counter += 1
         if self.children_counter == 4:
             self.kill()
+            return
 
     def photosynthesize(self):
         self.energy += self.game.energy_field[self.y][self.x]['sun']

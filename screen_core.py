@@ -54,7 +54,7 @@ class CellsFieldImage(pygame.Surface):
         self.cells_data = np.zeros((window_width // cell_size, window_height // cell_size, 5), dtype=np.int32)
         for x, row in enumerate(self.cells_data):
             for y, cell in enumerate(row):
-                self.cells_data[x, y] = (*self.color, x, y)
+                self.cells_data[x, y] = (0,0,0, x, y)
 
         self.render_cache = None
 
@@ -99,15 +99,17 @@ class CellsFieldImage(pygame.Surface):
 
     def render(self):
         to_blit = []
-        # if self.render_cache is not None:
-        #     changed_cells = self.find_diff(self.cells_data, self.render_cache)
-        #     for cell_info in changed_cells:
-        #         to_blit.append(self.render_cell(cell_info))
-        #
-        # else:
-        for row in self.cells_data:
-            for cell_info in row:
+        if self.render_cache is not None:
+            changed_cells = self.find_diff(self.cells_data, self.render_cache)
+            for cell_info in changed_cells:
                 to_blit.append(self.render_cell(cell_info))
+
+        else:
+            for row in self.cells_data:
+                for cell_info in row:
+                    cell_color = sum(cell_info[:3])
+                    if cell_color:
+                        to_blit.append(self.render_cell(cell_info))
 
         self.blits(to_blit)
 

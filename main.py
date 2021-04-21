@@ -18,8 +18,8 @@ parent_conn, child_conn = Pipe()
 # def get_from_queue():
 #     return screen_game_queue.get()
 def get_from_queue():
-    # if parent_conn.poll(1/FPS):
-    return parent_conn.recv()
+    if parent_conn.poll(0.001):
+        return parent_conn.recv()
     # else:
     #     print('no data')
 
@@ -57,6 +57,9 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                parent_conn.send(pos)
 
         do_actions()
         # clock.tick(FPS)

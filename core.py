@@ -92,7 +92,7 @@ class Game:
         self.cells_group = SpriteGroup()
         self.dead_cells_group = SpriteGroup()
 
-        self.cells_field[80][100] = Cell((80, 100), self)
+        # self.cells_field[80][100] = Cell((80, 100), self)
         # self.cells_field[20][100] = Cell((20, 100), self)
         # self.cells_field[10][10] = Cell((10, 10), self)
         # self.cells_field[11][10] = Cell((11, 10), self)
@@ -111,6 +111,11 @@ class Game:
         print('game_started')
         while True:
             self.update()
+            if self.screen_queue.poll(timeout=0.001):
+                mouse_pos = self.screen_queue.recv()
+                if [s for s in self.cells_group if s.rect.collidepoint(mouse_pos)]:
+                    print(mouse_pos)
+
 
             # for event in pygame.event.get():
             #     if event.type == pygame.QUIT:

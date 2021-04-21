@@ -270,6 +270,7 @@ class Cell(pygame.sprite.Sprite):
             pass
         elif self.energy <= 0:
             self.kill()
+            return
         # self.change_color()
         self.do_action(self.genome[self.genome_id])
         self.recursion_counter = 0

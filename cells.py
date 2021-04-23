@@ -21,7 +21,7 @@ class DeadCell(pygame.sprite.Sprite):
         self.y = coords[0]
         self.game.dead_cells_group.add(self)
         # self.color = [150, 150, 150]
-        self.color = [190, 190, 190]
+        self.color = [200, 200, 200]
         self.border_color = (80, 80, 80)
         self.image = pygame.Surface((cell_size, cell_size))
         self.rect = pygame.Rect(self.x, self.y, cell_size, cell_size)

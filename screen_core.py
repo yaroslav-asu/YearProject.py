@@ -1,4 +1,3 @@
-import os
 from typing import Tuple
 
 import numpy as np
@@ -97,7 +96,6 @@ class CellsFieldImage(pygame.Surface):
             if cell_color != self.color:
                 create_border(cell_image, BORDER_COLOR)
 
-
             self.cells_cache[cell_color] = cell_image
 
             return cell_image, (x * cell_size, y * cell_size)
@@ -119,71 +117,3 @@ class CellsFieldImage(pygame.Surface):
         self.blits(to_blit)
 
         self.render_cache = self.cells_data.copy()
-
-
-class GameScreen:
-    def __init__(self):
-        pygame.init()
-        pygame.mixer.init()
-
-        pygame.display.set_caption("My Game")
-        self.screen = pygame.display.set_mode((window_width, window_height))
-        self.clock = pygame.time.Clock()
-        self.running = True
-        self.fps = fps
-
-        self.cells_field_image = CellsFieldImage()
-        # self.cursor_image = CursorImage()
-
-    # @staticmethod
-    # def get_from_queue():
-    #     return screen_game_queue.get()
-
-    # def do_actions(self):
-    #     # responce = self.get_from_queue()
-    #     if responce:
-    #         if responce[0] == "add_cell_to_screen":
-    #             self.cells_field_image.add(*responce[1])
-    #         elif responce[0] == "delete_cell_from_screen":
-    #             self.cells_field_image.delete(*responce[1])
-    #         elif responce[0] == "move_cell_on_screen":
-    #             self.cells_field_image.move(*responce[1])
-    #         else:
-    #             print("request_exception")
-
-    def run(self):
-        while True:
-            self.do_actions()
-            self.screen.blit(self.cells_field_image, (0, 0))
-            # self.clock.tick(self.fps)
-            pygame.display.flip()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                    os._exit(1)
-            #     # if event.type == pygame.K_SPACE:
-            #     #     with stop_lock:
-            #     #         variables.stop = not variables.stop
-            #     # if event.type == pygame.MOUSEBUTTONUP:
-            #     #     pos = pygame.mouse.get_pos()
-            #     #     clicked_sprites = [sprite for sprite in list(self.cells_group) +
-            #     #                        list(self.dead_cells_group)
-            #     #                        if sprite.rect.collidepoint(pos)]
-            #     #     if clicked_sprites:
-            #     #         window.fill_window(clicked_sprites[0])
-            #     #         self.cursor_image.connect_cell(clicked_sprites[0])
-            #
-            # # with stop_lock:
-            # #     if variables.stop:
-            # #         self.screen.blit(self.cells_field_image, (0, 0))
-            # #         self.screen.blit(self.cursor_image, (0, 0))
-            # #         self.cursor_image.update()
-            # #         self.clock.tick(self.fps)
-            # #         pygame.display.flip()
-            # #         continue
-            #
-            # # self.screen.blit(self.cursor_image, (0, 0))
-            # # self.cursor_image.update()
-            # # window.update(self)
-            # # self.previous_cells_field = self.cells_field
-            #

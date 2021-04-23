@@ -4,6 +4,7 @@ import pygame
 
 background_color = (180, 180, 180)
 border_color = (170, 170, 170)
+dead_cell_color = ()
 window_width = 1800
 window_height = 900
 

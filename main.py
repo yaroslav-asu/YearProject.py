@@ -40,7 +40,6 @@ def do_actions():
 
 if __name__ == "__main__":
     FLIP_INTERVAL = 120
-    # screen_game_queue = Queue()
 
     game_process = Process(target=start_game, args=(child_conn,))
     game_process.start()

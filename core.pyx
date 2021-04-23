@@ -1,18 +1,20 @@
+import multiprocessing
 from random import random
 
-import numpy
+# import numpy
+# from pygame.sprite import AbstractGroup
+from operator import truth
 
 from cells import Cell
+from pygameclassesi cimport SpriteGroup
 from variables import *
+from pyximport import pyximport
+from libcpp cimport bool
+cimport numpy
+import numpy
 
-
-class SpriteGroup(pygame.sprite.Group):
-    def update(self, game):
-        pygame.sprite.Group.update(self, game)
-
-    def render(self, screen):
-        self.draw(screen)
-
+pyximport.install()
+# from pygameclassesi cimport SpriteGroup
 
 class CursorImage(pygame.Surface):
     def __init__(self):
@@ -68,14 +70,22 @@ class CellsFieldImage(pygame.Surface):
 
 
 class Game:
-    def __init__(self, screen_queue):
+    # cdef multiprocessing.Pipe screen_queue
+    # cdef bool running
+    # cdef int fps
+
+
+
+    # cdef numpy.ndarray energy_field, cells_field
+
+    # cdef SpriteGroup cells_group, dead_cells_group
+    def __init__(self):
         # pygame.init()
         # pygame.mixer.init()
         #
         # pygame.display.set_caption("My Game")
         # self.screen = pygame.display.set_mode((window_width, window_height))
         # self.clock = pygame.time.Clock()
-        self.screen_queue = screen_queue
         self.running = True
         self.fps = fps
         self.energy_field = numpy.array([[
@@ -107,14 +117,14 @@ class Game:
                 if random() < 0.1:
                     self.cells_field[i][j] = Cell((i, j), self)
 
-    def runn(self):
+    def run(self):
         print('game_started')
         while True:
             self.update()
-            if self.screen_queue.poll(timeout=0.001):
-                mouse_pos = self.screen_queue.recv()
-                if [s for s in self.cells_group if s.rect.collidepoint(mouse_pos)]:
-                    print(mouse_pos)
+            # if self.screen_queue.poll(timeout=0.001):
+            #     mouse_pos = self.screen_queue.recv()
+            #     if [s for s in self.cells_group if s.rect.collidepoint(mouse_pos)]:
+            #         print(mouse_pos)
 
 
             # for event in pygame.event.get():
@@ -164,4 +174,4 @@ class Game:
 
 def start_game(queue):
     game = Game(queue)
-    game.runn()
+    game.run()

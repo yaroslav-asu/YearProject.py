@@ -4,9 +4,12 @@ from multiprocessing import Process
 from multiprocessing import Queue, Pipe
 
 import pygame
+from pyximport import pyximport
 
-# pyximport.install()
+pyximport.install()
 from core import Game, start_game
+# from core import Game, start_game
+
 from screen_core import CellsFieldImage
 from variables import window_width, window_height
 
@@ -41,7 +44,7 @@ def do_actions():
 if __name__ == "__main__":
     FLIP_INTERVAL = 120
 
-    game_process = Process(target=start_game, args=(child_conn,))
+    game_process = Process(target=start_game)
     game_process.start()
     pygame.init()
     pygame.mixer.init()

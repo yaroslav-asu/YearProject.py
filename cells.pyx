@@ -1,7 +1,9 @@
-from random import randint, random
 
+from random import randint, random
+from core import Game
 import numpy
 
+from pygame_classes import Sprite
 from variables import *
 
 
@@ -12,8 +14,7 @@ def normalize_coords(*args):
     y = args[1]
     return x, y
 
-
-class DeadCell(pygame.sprite.Sprite):
+cdef class DeadCell(Sprite):
     def __init__(self, coords, game):
         super().__init__()
         self.game = game
@@ -30,7 +31,7 @@ class DeadCell(pygame.sprite.Sprite):
         # pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
         # self.game.cells_field_image.add(self.image, self.x, self.y)
         self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
-                                                      self.y)))
+                                                            self.y)))
 
     def kill(self):
         self.game.cells_field[self.y][self.x] = None
@@ -38,9 +39,14 @@ class DeadCell(pygame.sprite.Sprite):
         self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
         super().kill()
 
+cdef class Cell(Sprite):
 
-class Cell(pygame.sprite.Sprite):
+    from pygame import surface
+    from game cimport Game
     genome: numpy.array
+    cdef int x, y, degree, energy, max_energy, genome_id, children_counter, recursion_counter, actions_count
+    cdef list color, border_color
+    cdef Game game
 
     def __init__(self, coords, game, parent=None, color=[20, 150, 20]):
         super().__init__()
@@ -59,14 +65,12 @@ class Cell(pygame.sprite.Sprite):
         self.recursion_counter = 0
 
         self.actions_count = cells_number_of_available_actions
-        self.image = pygame.Surface((cell_size, cell_size))
-        create_border(self.image, self.border_color)
-        pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
+        # self.image = pygame.Surface((cell_size, cell_size))
+        # create_border(self.image, self.border_color)
+        # pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
         self.rect = pygame.Rect(self.x * cell_size, self.y * cell_size, cell_size, cell_size)
 
         # self.game.cells_field_image.add(self.image, self.x, self.y)
-        self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
-                                                     self.y)))
         self.from_sun_energy_counter = 0
         self.from_cells_energy_counter = 0
         self.from_minerals_energy_counter = 0
@@ -226,8 +230,8 @@ class Cell(pygame.sprite.Sprite):
         if start_x != self.x or start_y != self.y:
             # self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
             self.game.screen_queue.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
-                                                                self.color, self.border_color
-                                                                )))
+                                                                 self.color, self.border_color
+                                                                 )))
             self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self

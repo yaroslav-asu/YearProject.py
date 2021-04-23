@@ -2,11 +2,12 @@ from threading import Lock
 from multiprocessing import Queue
 import pygame
 
-
+background_color = (180, 180, 180)
+border_color = (170, 170, 170)
 window_width = 1800
 window_height = 900
 
-cell_size = 5
+cell_size = 2
 
 cell_energy_to_live = 3
 energy_for_cell_eat = 20

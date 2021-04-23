@@ -41,7 +41,8 @@ class CursorImage(pygame.Surface):
 
 
 class CellsFieldImage(pygame.Surface):
-    color = (140, 140, 140)
+    # color = (140, 140, 140)
+    color = background_color
     grey_square = pygame.Surface((cell_size, cell_size))
     grey_square.fill(color)
 
@@ -51,10 +52,11 @@ class CellsFieldImage(pygame.Surface):
         super().__init__((window_width, window_height))
         self.fill(self.color)
 
-        self.cells_data = np.zeros((window_width // cell_size, window_height // cell_size, 5), dtype=np.int32)
+        self.cells_data = np.zeros((window_width // cell_size, window_height // cell_size, 5),
+                                   dtype=np.int32)
         for x, row in enumerate(self.cells_data):
             for y, cell in enumerate(row):
-                self.cells_data[x, y] = (0,0,0, x, y)
+                self.cells_data[x, y] = (0, 0, 0, x, y)
 
         self.render_cache = None
 
@@ -79,7 +81,8 @@ class CellsFieldImage(pygame.Surface):
         return diff
 
     def render_cell(self, cell_info):
-        BORDER_COLOR = (80, 80, 80)
+        # BORDER_COLOR = border_color
+        BORDER_COLOR = tuple(cell_info[:3])
         COLOR = Tuple[int, int]
 
         cell_color: COLOR = tuple(cell_info[:3])
@@ -90,8 +93,10 @@ class CellsFieldImage(pygame.Surface):
             return cached_cell, (x * cell_size, y * cell_size)
         else:
             cell_image = pygame.Surface((cell_size, cell_size))
-            create_border(cell_image, BORDER_COLOR)
-            pygame.draw.rect(cell_image, cell_color, (1, 1, cell_size - 1, cell_size - 1))
+            pygame.draw.rect(cell_image, cell_color, (0, 0, cell_size, cell_size))
+            if cell_color != self.color:
+                create_border(cell_image, BORDER_COLOR)
+
 
             self.cells_cache[cell_color] = cell_image
 
@@ -130,21 +135,21 @@ class GameScreen:
         self.cells_field_image = CellsFieldImage()
         # self.cursor_image = CursorImage()
 
-    @staticmethod
-    def get_from_queue():
-        return screen_game_queue.get()
+    # @staticmethod
+    # def get_from_queue():
+    #     return screen_game_queue.get()
 
-    def do_actions(self):
-        responce = self.get_from_queue()
-        if responce:
-            if responce[0] == "add_cell_to_screen":
-                self.cells_field_image.add(*responce[1])
-            elif responce[0] == "delete_cell_from_screen":
-                self.cells_field_image.delete(*responce[1])
-            elif responce[0] == "move_cell_on_screen":
-                self.cells_field_image.move(*responce[1])
-            else:
-                print("request_exception")
+    # def do_actions(self):
+    #     # responce = self.get_from_queue()
+    #     if responce:
+    #         if responce[0] == "add_cell_to_screen":
+    #             self.cells_field_image.add(*responce[1])
+    #         elif responce[0] == "delete_cell_from_screen":
+    #             self.cells_field_image.delete(*responce[1])
+    #         elif responce[0] == "move_cell_on_screen":
+    #             self.cells_field_image.move(*responce[1])
+    #         else:
+    #             print("request_exception")
 
     def run(self):
         while True:

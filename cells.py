@@ -20,12 +20,14 @@ class DeadCell(pygame.sprite.Sprite):
         self.x = coords[1]
         self.y = coords[0]
         self.game.dead_cells_group.add(self)
-        self.color = [150, 150, 150]
+        # self.color = [150, 150, 150]
+        self.color = [190, 190, 190]
         self.border_color = (80, 80, 80)
         self.image = pygame.Surface((cell_size, cell_size))
         self.rect = pygame.Rect(self.x, self.y, cell_size, cell_size)
-        pygame.draw.rect(self.image, self.border_color, (0, 0, cell_size, cell_size))
-        pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
+        pygame.draw.rect(self.image, self.color, (0, 0, cell_size, cell_size))
+        # pygame.draw.rect(self.image, self.border_color, (0, 0, cell_size, cell_size))
+        # pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
         # self.game.cells_field_image.add(self.image, self.x, self.y)
         self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
                                                       self.y)))
@@ -46,7 +48,8 @@ class Cell(pygame.sprite.Sprite):
         self.x = coords[1]
         self.y = coords[0]
         self.color = color
-        self.border_color = (80, 80, 80)
+        # self.border_color = (80, 80, 80)
+        self.border_color = color
         self.game = game
         self.energy = start_cell_energy
         self.max_energy = max_cell_energy
@@ -79,12 +82,13 @@ class Cell(pygame.sprite.Sprite):
         }
 
         if not parent:
-            self.genome = numpy.array([randint(1, 63) for i in range(64)], numpy.int8)
+            self.genome = numpy.array([25 for i in range(64)], numpy.int8)
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             self.genome = parent.genome.copy()
             if random() < 0.25:
                 self.genome[randint(0, 63)] = randint(1, 63)
+
             # main_genome = parent.genome.copy()
             # genome = main_genome.copy()
             # if random() < 0.9:

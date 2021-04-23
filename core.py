@@ -94,12 +94,12 @@ class Game:
 
         # self.cells_field[80][100] = Cell((80, 100), self)
         # self.cells_field[20][100] = Cell((20, 100), self)
-        # self.cells_field[10][10] = Cell((10, 10), self)
+        self.cells_field[10][10] = Cell((10, 10), self)
         # self.cells_field[11][10] = Cell((11, 10), self)
         # self.cells_field[10][11] = Cell((10, 11), self)
         # self.cells_field[11][11] = Cell((11, 11), self)
 
-        self.generate_cells()
+        # self.generate_cells()
 
     def generate_cells(self):
         for i in range(window_height // cell_size):

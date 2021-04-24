@@ -1,15 +1,4 @@
-from pg cimport MySprite
-cdef class MySprite:
-    def __init__(self):
-        self.__g = {}
-
-    cdef kill(self):
-        for group in self.__g:
-            group.remove_internal(self)
-        self.__g.clear()
-
-    cdef add_internal(self, group):
-        self.__g[group] = 0
+from mysprite cimport MySprite
 
 cdef class MySpriteGroup:
     def __init__(self):
@@ -21,13 +10,13 @@ cdef class MySpriteGroup:
                 self.add_internal(sprite)
                 sprite.add_internal(self)
 
-    cdef add_internal(self, sprite):
+    cdef add_internal(self, MySprite  sprite):
         self.sprites[sprite] = 0
 
-    cdef has_internal(self, sprite):
+    cdef has_internal(self, MySprite  sprite):
         return sprite in self.sprites
 
-    cdef remove_internal(self, sprite):
+    cdef remove_internal(self, MySprite  sprite):
         del self.sprites[sprite]
 
     def __iter__(self):

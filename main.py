@@ -1,6 +1,8 @@
-from multiprocessing import Pipe
+from multiprocessing import Pipe, Process
 import numpy
 import pygame
+from variables import *
+
 # from pyximport import pyximport
 #
 # pyximport.install(setup_args={'include_dirs': numpy.get_include()})
@@ -43,43 +45,42 @@ def do_actions():
 
 
 if __name__ == "__main__":
-
     from core import start_game
-    start_game()
-    # FLIP_INTERVAL = 120
-    #
-    # game_process = Process(target=start_game)
-    # game_process.start()
-    # pygame.init()
-    # pygame.mixer.init()
-    #
-    # pygame.display.set_caption("My Game")
-    # screen = pygame.display.set_mode((window_width, window_height))
-    # clock = pygame.time.Clock()
-    # running = True
-    #
-    # counter = 0
-    # while running:
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             running = False
-    #         if event.type == pygame.MOUSEBUTTONUP:
-    #             pos = pygame.mouse.get_pos()
-    #             parent_conn.send(pos)
-    #
-    #     do_actions()
-    #     # clock.tick(FPS)
-    #     if counter >= FLIP_INTERVAL:
-    #
-    #         screen.blit(cells_field_image, (0, 0))
-    #         cells_field_image.render()
-    #
-    #         pygame.display.flip()
-    #         counter = 0
-    #     counter += 1
-    #
-    # game_process.kill()
-    # pygame.quit()
+    # start_game()
+    FLIP_INTERVAL = 120
+
+    game_process = Process(target=start_game)
+    game_process.start()
+    pygame.init()
+    pygame.mixer.init()
+
+    pygame.display.set_caption("My Game")
+    screen = pygame.display.set_mode((window_width, window_height))
+    clock = pygame.time.Clock()
+    running = True
+
+    counter = 0
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                parent_conn.send(pos)
+
+        do_actions()
+        # clock.tick(FPS)
+        if counter >= FLIP_INTERVAL:
+
+            screen.blit(cells_field_image, (0, 0))
+            cells_field_image.render()
+
+            pygame.display.flip()
+            counter = 0
+        counter += 1
+
+    game_process.kill()
+    pygame.quit()
 
     # game.run()
     # game_screen.cells_field_image.add((0, 0, 0), (0, 0, 0), 0, 0)

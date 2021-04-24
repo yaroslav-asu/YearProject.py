@@ -4,10 +4,11 @@ from random import random
 # # from pygame.sprite import AbstractGroup
 from operator import truth
 #
-from cells import Cell
+from cell import Cell
 # # from pygame_classes import MySpriteGroup
 from variables import *
-from pg cimport MySpriteGroup
+from myspritegroup cimport MySpriteGroup
+from mysprite cimport MySprite
 from libcpp cimport bool
 # cimport numpy
 # import numpy

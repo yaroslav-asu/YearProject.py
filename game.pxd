@@ -1,4 +1,4 @@
-from pg cimport  MySpriteGroup
+from myspritegroup cimport  MySpriteGroup
 cdef class Game:
     cdef bint running
     cdef int fps

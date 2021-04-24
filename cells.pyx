@@ -1,11 +1,10 @@
-
 from random import randint, random
-from core import Game
 import numpy
 
-from pygame_classes import Sprite
+# from pygameclassesi cimport MySprite
 from variables import *
-
+from game cimport Game
+from pg cimport MySprite
 
 def normalize_coords(*args):
     if len(args) == 1:
@@ -14,7 +13,10 @@ def normalize_coords(*args):
     y = args[1]
     return x, y
 
-cdef class DeadCell(Sprite):
+cdef class DeadCell(MySprite):
+    cdef Game game
+    cdef int x, y
+    cdef list border_color, color
     def __init__(self, coords, game):
         super().__init__()
         self.game = game
@@ -23,38 +25,38 @@ cdef class DeadCell(Sprite):
         self.game.dead_cells_group.add(self)
         # self.color = [150, 150, 150]
         self.color = [200, 200, 200]
-        self.border_color = (80, 80, 80)
-        self.image = pygame.Surface((cell_size, cell_size))
-        self.rect = pygame.Rect(self.x, self.y, cell_size, cell_size)
-        pygame.draw.rect(self.image, self.color, (0, 0, cell_size, cell_size))
+        self.border_color = [80, 80, 80]
+        # self.image = pygame.Surface((cell_size, cell_size))
+        # self.rect = pygame.Rect(self.x, self.y, cell_size, cell_size)
+        # pygame.draw.rect(self.image, self.color, (0, 0, cell_size, cell_size))
         # pygame.draw.rect(self.image, self.border_color, (0, 0, cell_size, cell_size))
         # pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
         # self.game.cells_field_image.add(self.image, self.x, self.y)
-        self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
-                                                            self.y)))
+        # self.game.screen_queue.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
+                                                            # self.y)))
 
-    def kill(self):
+    cdef kill(self):
         self.game.cells_field[self.y][self.x] = None
         # self.game.cells_field_image.delete(self.x, self.y)
-        self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
+        # self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
         super().kill()
 
-cdef class Cell(Sprite):
+cdef class Cell(MySprite):
 
     from pygame import surface
-    from game cimport Game
-    genome: numpy.array
+
     cdef int x, y, degree, energy, max_energy, genome_id, children_counter, recursion_counter, actions_count
-    cdef list color, border_color
+    cdef list color, border_color, genome
     cdef Game game
 
-    def __init__(self, coords, game, parent=None, color=[20, 150, 20]):
+    def __init__(self, coords, Game game, parent=None, color=[20, 150, 20]):
         super().__init__()
+        print(game.cells_group)
         game.cells_group.add(self)
+
         self.x = coords[1]
         self.y = coords[0]
         self.color = color
-        # self.border_color = (80, 80, 80)
         self.border_color = color
         self.game = game
         self.energy = start_cell_energy
@@ -65,12 +67,8 @@ cdef class Cell(Sprite):
         self.recursion_counter = 0
 
         self.actions_count = cells_number_of_available_actions
-        # self.image = pygame.Surface((cell_size, cell_size))
-        # create_border(self.image, self.border_color)
-        # pygame.draw.rect(self.image, self.color, (1, 1, cell_size - 2, cell_size - 2))
-        self.rect = pygame.Rect(self.x * cell_size, self.y * cell_size, cell_size, cell_size)
+        # self.rect = pygame.Rect(self.x * cell_size, self.y * cell_size, cell_size, cell_size)
 
-        # self.game.cells_field_image.add(self.image, self.x, self.y)
         self.from_sun_energy_counter = 0
         self.from_cells_energy_counter = 0
         self.from_minerals_energy_counter = 0
@@ -86,28 +84,16 @@ cdef class Cell(Sprite):
         }
 
         if not parent:
-            self.genome = numpy.array([25 for i in range(64)], numpy.int8)
+            self.genome = [25 for i in range(64)]
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             self.genome = parent.genome.copy()
             if random() < 0.25:
                 self.genome[randint(0, 63)] = randint(1, 63)
 
-            # main_genome = parent.genome.copy()
-            # genome = main_genome.copy()
-            # if random() < 0.9:
-            #     counter = 0
-            #     genome[randint(0, 63)] = randint(1, 63)
-            #     while self.check_recursion(genome):
-            #         genome = main_genome.copy()
-            #         genome[randint(0, 63)] = randint(1, 63)
-            #         counter += 1
-            #     if counter:
-            #         print(counter)
-            # self.genome = genome
 
     @staticmethod
-    def check_recursion(genome):
+    cdef check_recursion(genome):
         was_ids = set()
         was_actions = set()
         action_id = 0
@@ -123,7 +109,7 @@ cdef class Cell(Sprite):
         else:
             return True
 
-    def change_color(self):
+    cdef change_color(self):
         maximum_color_id = 0
         colors = [self.from_cells_energy_counter,
                   self.from_sun_energy_counter,
@@ -136,7 +122,7 @@ cdef class Cell(Sprite):
             for color_id in list({0, 1, 2} - {maximum_color_id}):
                 self.color[color_id] = int(colors[color_id] / colors[maximum_color_id] * 150)
 
-    def bite(self):
+    cdef bite(self):
         in_front_coords = self.in_front_position()
         in_front_obj = self.get_object_from_coords(in_front_coords)
         if in_front_obj == 'Cell' or in_front_obj == 'DeadCell' or in_front_obj == 'FamilyCell':
@@ -144,7 +130,7 @@ cdef class Cell(Sprite):
             self.energy += energy_for_cell_eat
             self.from_cells_energy_counter += 1
 
-    def do_action(self, action_id):
+    cdef do_action(self, action_id):
         self.recursion_counter += 1
         if self.recursion_counter > 15:
             self.kill()
@@ -176,7 +162,7 @@ cdef class Cell(Sprite):
             return
         # self.recursion_counter = 0
 
-    def in_front_position(self):
+    cdef in_front_position(self):
         if self.degree == 0:
             coords = normalize_coords(self.x + 1, self.y)
         elif self.degree == 1 * 45:
@@ -195,19 +181,19 @@ cdef class Cell(Sprite):
             coords = normalize_coords(self.x + 1, self.y - 1)
         return coords
 
-    def change_degree(self, degree):
+    cdef change_degree(self, degree):
         self.degree = (self.degree + degree) % 360
 
-    def get_self_energy(self):
+    cdef get_self_energy(self):
         if self.energy < self.genome[(self.genome_id + 1) % 64]:
             self.do_action(25)
         else:
             self.genome_id = (self.genome_id + 1) % 64
             self.do_action(self.genome_id)
 
-    def look_in_front(self):
+    cdef look_in_front(self):
         coords = self.in_front_position()
-        in_front_obj = self.get_object_from_coords(*coords)
+        in_front_obj = self.get_object_from_coords(coords)
         if in_front_obj == 'Cell':
             coefficient = 2
         elif in_front_obj == 'DeadCell':
@@ -221,7 +207,7 @@ cdef class Cell(Sprite):
         action_id = self.genome[(self.genome_id + coefficient) % 64]
         self.do_action(action_id)
 
-    def move(self):
+    cdef move(self):
         start_x, start_y = self.x, self.y
         self.change_degree((self.genome[(self.genome_id + 1) % 64] % 8) * 45)
         in_front_coords = self.in_front_position()
@@ -229,26 +215,26 @@ cdef class Cell(Sprite):
             self.x, self.y = in_front_coords
         if start_x != self.x or start_y != self.y:
             # self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
-            self.game.screen_queue.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
-                                                                 self.color, self.border_color
-                                                                 )))
+            # self.game.screen_queue.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
+            #                                                      self.color, self.border_color
+            #                                                      )))
             self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self
 
-    def can_move(self, *args):
+    cdef can_move(self, args):
         if len(args) == 1:
             x, y = args[0][0], args[0][1]
         else:
             x, y = args[0], args[1]
 
         if 0 <= y < window_height // cell_size and \
-            not self.get_object_from_coords(x % (window_width // cell_size), y):
+            not self.get_object_from_coords([x % (window_width // cell_size), y]):
             return True
         else:
             return False
 
-    def get_object_from_coords(self, *args):
+    cdef get_object_from_coords(self, args):
         if len(args) == 1:
             x, y = args[0][0], args[0][1]
         else:
@@ -272,7 +258,7 @@ cdef class Cell(Sprite):
         elif not self.game.cells_field[y][x]:
             return None
 
-    def update(self, game):
+    cdef update(self, game):
         self.change_color()
         if self.energy >= self.max_energy:
             self.reproduce()
@@ -284,14 +270,14 @@ cdef class Cell(Sprite):
         self.do_action(self.genome[self.genome_id])
         self.recursion_counter = 0
 
-    def reproduce(self):
+    cdef reproduce(self):
         coords_list = []
         for i in range(0, 2):
             x = (self.x + (-1) ** i + window_width // cell_size) % (window_width // cell_size)
             y = self.y + (-1) ** i
-            if self.can_move(x, self.y):
+            if self.can_move([x, self.y]):
                 coords_list.append((self.y, x))
-            if self.can_move(self.x, y):
+            if self.can_move([self.x, y]):
                 coords_list.append((y, self.x))
         if len(coords_list):
             coords = coords_list[randint(0, len(coords_list) - 1)]
@@ -309,15 +295,15 @@ cdef class Cell(Sprite):
             self.kill()
             return
 
-    def photosynthesize(self):
+    cdef photosynthesize(self):
         self.energy += self.game.energy_field[self.y][self.x]['sun']
         self.from_sun_energy_counter += 1
 
-    def get_energy_from_mineral(self):
+    cdef get_energy_from_mineral(self):
         self.energy += self.game.energy_field[self.y][self.x]['minerals']
         self.from_minerals_energy_counter += 1
 
-    def kill(self):
+    cdef kill(self):
         self.game.cells_field[self.y][self.x] = None
         self.game.screen_queue.send(('delete_cell_from_screen', (self.x, self.y)))
         super().kill()

@@ -26,5 +26,4 @@ cdef class Cell(MySprite):
     cdef photosynthesize(self)
     cdef get_energy_from_mineral(self)
     cdef public kill(self)
-    cdef check_recursion(self, list genome)
 

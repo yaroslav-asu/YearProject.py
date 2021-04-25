@@ -32,15 +32,15 @@ cdef class Game:
 
         # self.cells_group.add(cell)
 
-        self.cells_field[10][10] = cell
-        # self.generate_cells()
+        # self.cells_field[10][10] = cell
+        self.generate_cells()
 
 
     cdef generate_cells(self):
         for i in range(window_height // cell_size):
             for j in range(window_width // cell_size):
                 if random() < 0.001:
-                    self.cells_field[i][j] = Cell((i, j), self)
+                    self.cells_field[i][j] = Cell([i, j], self)
 
     cdef run(self):
         while True:

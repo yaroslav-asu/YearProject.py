@@ -46,27 +46,12 @@ cdef class Cell(MySprite):
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             self.genome = parent.genome.copy()
-            # if random() < 0.25:
-            #     self.genome[randint(0, 63)] = randint(1, 63)
+            if random() < 0.25:
+                self.genome[randint(0, 63)] = randint(1, 63)
 
         # self.game.cells_field[self.x][self.y] = self
         self.game.cells_group.add(self)
 
-    cdef check_recursion(self, list genome):
-        was_ids = set()
-        was_actions = set()
-        action_id = 0
-        while action_id not in was_ids:
-            was_ids.add(action_id)
-            if genome[action_id] in [24, 25, 27]:
-                was_actions.add(action_id)
-                action_id = (action_id + 1) % 64
-            else:
-                action_id = (genome[action_id] + action_id) % 64
-        if was_actions:
-            return False
-        else:
-            return True
 
     cdef public change_color(self):
         maximum_color_id = 0
@@ -85,7 +70,7 @@ cdef class Cell(MySprite):
         cdef bint bitten = False
         in_front_coords = self.in_front_position()
         in_front_obj = self.get_object_from_coords(in_front_coords)
-        if in_front_obj == 'Cell'or in_front_obj == 'FamilyCell':
+        if in_front_obj == 'Cell':
             Cell.kill(self.game.cells_field[in_front_coords[1]][in_front_coords[0]])
             bitten = True
         elif in_front_obj == 'DeadCell':
@@ -216,7 +201,7 @@ cdef class Cell(MySprite):
                     counter += 1
                     if counter > 1:
                         break
-            if counter == 1:
+            if counter <= 1:
                 return 'FamilyCell'
             else:
                 return 'Cell'

@@ -10,10 +10,10 @@ cdef class DeadCell(MySprite):
         self.game.dead_cells_group.add(self)
         self.color = [200, 200, 200]
         self.border_color = [80, 80, 80]
-        self.game.pipe[0].send(('add_cell_to_screen', (self.color, self.border_color, self.x,
+        self.game.pipe.send(('add_cell_to_screen', (self.color, self.border_color, self.x,
                                                       self.y)))
 
-    cdef kill(self):
+    cdef public kill(self):
         self.game.cells_field[self.y][self.x] = None
-        self.game.pipe[0].send(('delete_cell_from_screen', (self.x, self.y)))
-        super().kill()
+        self.game.pipe.send(('delete_cell_from_screen', (self.x, self.y)))
+        MySprite.kill(self)

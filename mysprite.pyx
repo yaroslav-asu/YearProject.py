@@ -5,7 +5,7 @@ cdef class MySprite:
 
     cdef kill(self):
         for group in self.__g:
-            MySpriteGroup.remove_internal(group, self)
+            MySpriteGroup.remove(group, self)
         self.__g.clear()
 
     cdef add_internal(self, group):

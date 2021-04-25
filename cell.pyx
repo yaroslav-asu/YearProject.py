@@ -46,8 +46,8 @@ cdef class Cell(MySprite):
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             self.genome = parent.genome.copy()
-            if random() < 0.25:
-                self.genome[randint(0, 63)] = randint(1, 63)
+            # if random() < 0.25:
+            #     self.genome[randint(0, 63)] = randint(1, 63)
 
         # self.game.cells_field[self.x][self.y] = self
         self.game.cells_group.add(self)
@@ -82,10 +82,16 @@ cdef class Cell(MySprite):
                 self.color[color_id] = int(colors[color_id] / colors[maximum_color_id] * 150)
 
     cdef bite(self):
+        cdef bint bitten = False
         in_front_coords = self.in_front_position()
         in_front_obj = self.get_object_from_coords(in_front_coords)
-        if in_front_obj == 'Cell' or in_front_obj == 'DeadCell' or in_front_obj == 'FamilyCell':
-            self.game.cells_field[in_front_coords[1]][in_front_coords[0]].kill()
+        if in_front_obj == 'Cell'or in_front_obj == 'FamilyCell':
+            Cell.kill(self.game.cells_field[in_front_coords[1]][in_front_coords[0]])
+            bitten = True
+        elif in_front_obj == 'DeadCell':
+            DeadCell.kill(self.game.cells_field[in_front_coords[1]][in_front_coords[0]])
+            bitten = True
+        if bitten:
             self.energy += energy_for_cell_eat
             self.from_cells_energy_counter += 1
 
@@ -98,7 +104,8 @@ cdef class Cell(MySprite):
             if action_id in self.actions_dict.keys():
                 if self.actions_count - actions_costs[action_id] >= 0:
                     if action_id == 23:
-                        self.actions_dict[action_id]((self.genome[(self.genome_id + 1) % 64] % 8)
+                        self.actions_dict[action_id](self, (self.genome[(self.genome_id + 1) % 64]
+                                                          % 8)
                                                      * 45)
                     else:
                         self.actions_dict[action_id](self)
@@ -173,10 +180,10 @@ cdef class Cell(MySprite):
             self.x, self.y = in_front_coords
         if start_x != self.x or start_y != self.y:
             # self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
-            self.game.screen_queue.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
+            self.game.pipe.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
                                                                  self.color, self.border_color
                                                                  )))
-            self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
+            # self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self
 
@@ -246,7 +253,7 @@ cdef class Cell(MySprite):
         else:
             MySpriteGroup.remove(self.game.cells_group, self)
             # super().kill()
-            self.game.cells_field[self.y][self.x] = DeadCell((self.y, self.x), self.game)
+            self.game.cells_field[self.y][self.x] = DeadCell([self.y, self.x], self.game)
             return
         self.energy = start_cell_energy
 
@@ -263,7 +270,7 @@ cdef class Cell(MySprite):
         self.energy += self.game.energy_field[self.y][self.x]['minerals']
         self.from_minerals_energy_counter += 1
 
-    cdef kill(self):
+    cdef public kill(self):
         self.game.cells_field[self.y][self.x] = None
         self.game.pipe.send(('delete_cell_from_screen', (self.x, self.y)))
         MySprite.kill(self)

@@ -5,4 +5,4 @@ cdef class DeadCell(MySprite):
     cdef Game game
     cdef int x, y
     cdef list border_color, color
-    cdef kill(self)
+    cdef public kill(self)

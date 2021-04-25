@@ -19,7 +19,8 @@ cdef class MySpriteGroup:
         return sprite in self.sprites
 
     cdef public remove(self, MySprite sprite):
-        self.remove_internal(sprite)
+        if sprite in self.sprites:
+            self.remove_internal(sprite)
 
     cdef public remove_internal(self, MySprite  sprite):
         del self.sprites[sprite]

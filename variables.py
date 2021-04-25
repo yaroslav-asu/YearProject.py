@@ -46,4 +46,4 @@ def normalize_coords(*args):
         args = [args[0][0], args[0][1]]
     x = args[0] % (window_width // cell_size)
     y = args[1]
-    return x, y
+    return [x, y]

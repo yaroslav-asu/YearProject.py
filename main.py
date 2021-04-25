@@ -21,13 +21,9 @@ cells_field_image = CellsFieldImage()
 parent_conn, child_conn = Pipe()
 
 
-# def get_from_queue():
-#     return screen_game_queue.get()
 def get_from_queue():
     if parent_conn.poll(0.001):
         return parent_conn.recv()
-    # else:
-    #     print('no data')
 
 
 def do_actions():
@@ -35,6 +31,7 @@ def do_actions():
     responce = get_from_queue()
     if responce:
         if responce[0] == "add_cell_to_screen":
+            # print(responce)
             cells_field_image.add(*responce[1])
         elif responce[0] == "delete_cell_from_screen":
             cells_field_image.delete(*responce[1])
@@ -42,6 +39,7 @@ def do_actions():
             cells_field_image.move(*responce[1])
         else:
             print("request_exception")
+            print(responce)
 
 
 if __name__ == "__main__":
@@ -49,7 +47,7 @@ if __name__ == "__main__":
     # start_game()
     FLIP_INTERVAL = 120
 
-    game_process = Process(target=start_game)
+    game_process = Process(target=start_game, args=(child_conn,))
     game_process.start()
     pygame.init()
     pygame.mixer.init()
@@ -69,7 +67,6 @@ if __name__ == "__main__":
                 parent_conn.send(pos)
 
         do_actions()
-        # clock.tick(FPS)
         if counter >= FLIP_INTERVAL:
 
             screen.blit(cells_field_image, (0, 0))
@@ -81,18 +78,3 @@ if __name__ == "__main__":
 
     game_process.kill()
     pygame.quit()
-
-    # game.run()
-    # game_screen.cells_field_image.add((0, 0, 0), (0, 0, 0), 0, 0)
-    # game_screen.run()
-    #
-
-    # game_process.join()
-    # thread2 = threading.Thread(target=game.run)
-    # thread2.daemon = True
-    # # thread2 = multiprocessing.Process(target=start_game)
-    # thread2.start()
-    # # thread1.start()
-    # # thread1.join()
-    # interface_logic.run_interface()
-    # thread2.join()

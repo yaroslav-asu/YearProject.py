@@ -10,7 +10,7 @@ cdef class MySpriteGroup:
                 self.add_internal(sprite)
                 sprite.add_internal(self)
 
-    cdef add_internal(self, MySprite  sprite):
+    cdef add_internal(self, MySprite sprite):
         self.sprites[sprite] = 0
 
     cdef has_internal(self, MySprite  sprite):
@@ -20,4 +20,4 @@ cdef class MySpriteGroup:
         del self.sprites[sprite]
 
     def __iter__(self):
-        return iter(self.sprites())
+        return iter(self.sprites)

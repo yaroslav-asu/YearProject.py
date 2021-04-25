@@ -12,7 +12,6 @@ cell_size = 2
 
 cell_energy_to_live = 3
 energy_for_cell_eat = 20
-# cells_commands = [25, 24, 26]
 
 cells_number_of_available_actions = 5
 actions_costs = {
@@ -22,13 +21,9 @@ actions_costs = {
     24: 5,  # получение энергии из минералов
     25: 5,  # фотосинтез
     26: 1,  # движение
-    27: 5  # съесть клетку
+    27: 2  # съесть клетку
 }
 
-# energy_field_stats = {
-#     'sun': 5,
-#     'minerals': 4
-# }
 
 start_cell_energy = 50
 max_cell_energy = 100

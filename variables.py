@@ -27,6 +27,7 @@ actions_costs = {
 
 start_cell_energy = 50
 max_cell_energy = 100
+genome_size  = 64
 
 stop_lock = Lock()
 stop = False

@@ -9,4 +9,4 @@ cdef class MySpriteGroup:
 
     cdef has_internal(self, MySprite sprite)
 
-    cdef remove_internal(self, MySprite sprite)
+    cdef public remove_internal(self, MySprite sprite)

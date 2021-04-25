@@ -4,6 +4,9 @@ from variables import *
 from myspritegroup cimport MySpriteGroup
 from cell cimport Cell
 
+cdef fun(int num):
+    num += 1
+
 cdef class Game:
 
     def __cinit__(self):
@@ -23,11 +26,13 @@ cdef class Game:
         self.dead_cells_group = MySpriteGroup()
 
     def __init__(self, object pipe):
+
         self.pipe = pipe
-        cdef Cell cell = Cell((10, 10), self)
-        print(cell.x, cell.update)
-        self.cells_group.add(cell)
-        # self.cells_field[10][10] = cell
+        cdef Cell cell = Cell([10, 10], self)
+
+        # self.cells_group.add(cell)
+
+        self.cells_field[10][10] = cell
         # self.generate_cells()
 
 
@@ -43,7 +48,8 @@ cdef class Game:
 
     cdef update(self):
         for cell in self.cells_group:
-            cell.update(self)
+        # for cell in self.cells_list:
+            Cell.update(cell)
 
     cdef draw(self):
         pass

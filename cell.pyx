@@ -1,10 +1,8 @@
 from random import randint, random
 
-
-from variables import *
-
 from deadcell cimport DeadCell
 from myspritegroup cimport MySpriteGroup
+from variables import *
 
 cdef class Cell(MySprite):
     def __cinit__(self):
@@ -17,7 +15,6 @@ cdef class Cell(MySprite):
 
         self.actions_count = cells_number_of_available_actions
         # self.rect = pygame.Rect(self.x * cell_size, self.y * cell_size, cell_size, cell_size)
-
 
         self.from_sun_energy_counter = 0
         self.from_cells_energy_counter = 0
@@ -46,12 +43,12 @@ cdef class Cell(MySprite):
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
         else:
             self.genome = parent.genome.copy()
-            if random() < 0.25:
+            if random() < cell_mutation_chance / 100:
                 self.genome[randint(0, 63)] = randint(1, 63)
 
         # self.game.cells_field[self.x][self.y] = self
         self.game.cells_group.add(self)
-
+        game.pipe.send(('bd', self.x))
 
     cdef public change_color(self):
         maximum_color_id = 0
@@ -65,6 +62,15 @@ cdef class Cell(MySprite):
             self.color[maximum_color_id] = 150
             for color_id in list({0, 1, 2} - {maximum_color_id}):
                 self.color[color_id] = int(colors[color_id] / colors[maximum_color_id] * 150)
+    # cdef public change_color(self):
+    #     sum = self.from_cells_energy_counter + self.from_sun_energy_counter + \
+    #           self.from_minerals_energy_counter
+    #     colors = [self.from_cells_energy_counter,
+    #               self.from_sun_energy_counter,
+    #               self.from_minerals_energy_counter]
+    #     if all(colors):
+    #         self.color = [self.from_cells_energy_counter / sum * 150, self.from_sun_energy_counter
+    #                       / sum * 150, self.from_minerals_energy_counter / sum * 150]
 
     cdef bite(self):
         cdef bint bitten = False
@@ -90,7 +96,7 @@ cdef class Cell(MySprite):
                 if self.actions_count - actions_costs[action_id] >= 0:
                     if action_id == 23:
                         self.actions_dict[action_id](self, (self.genome[(self.genome_id + 1) % 64]
-                                                          % 8)
+                                                            % 8)
                                                      * 45)
                     else:
                         self.actions_dict[action_id](self)
@@ -166,8 +172,8 @@ cdef class Cell(MySprite):
         if start_x != self.x or start_y != self.y:
             # self.game.cells_field_image.move(start_x, start_y, self.x, self.y, self.image)
             self.game.pipe.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
-                                                                 self.color, self.border_color
-                                                                 )))
+                                                         self.color, self.border_color
+                                                         )))
             # self.rect.x, self.rect.y = self.x * cell_size, self.y * cell_size
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self

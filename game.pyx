@@ -1,3 +1,4 @@
+from pprint import pprint
 from random import random
 from variables import *
 
@@ -19,6 +20,8 @@ cdef class Game:
             }
             for i in range(1800 // cell_size)]
             for j in range(900 // cell_size)]
+        # energy_field = [[(8 - j, j ) for i in range(18)] for j in range(9)]
+        # pprint(energy_field)
         self.cells_field = [[None for i in range(window_width // cell_size)]
                                         for j in range(window_height // cell_size)]
 
@@ -28,7 +31,7 @@ cdef class Game:
     def __init__(self, object pipe):
 
         self.pipe = pipe
-        cdef Cell cell = Cell([10, 10], self)
+        # cdef Cell cell = Cell([10, 10], self)
 
         # self.cells_group.add(cell)
 
@@ -43,7 +46,7 @@ cdef class Game:
                     self.cells_field[i][j] = Cell([i, j], self)
 
     cdef run(self):
-        while True:
+        while self.running:
             self.update()
 
     cdef update(self):

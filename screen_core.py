@@ -93,8 +93,8 @@ class CellsFieldImage(pygame.Surface):
         else:
             cell_image = pygame.Surface((cell_size, cell_size))
             pygame.draw.rect(cell_image, cell_color, (0, 0, cell_size, cell_size))
-            if cell_color != self.color:
-                create_border(cell_image, BORDER_COLOR)
+            # if cell_color != self.color:
+            #     create_border(cell_image, BORDER_COLOR)
 
             self.cells_cache[cell_color] = cell_image
 
@@ -106,7 +106,6 @@ class CellsFieldImage(pygame.Surface):
             changed_cells = self.find_diff(self.cells_data, self.render_cache)
             for cell_info in changed_cells:
                 to_blit.append(self.render_cell(cell_info))
-
         else:
             for row in self.cells_data:
                 for cell_info in row:

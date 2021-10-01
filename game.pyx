@@ -5,14 +5,10 @@ from variables import *
 from myspritegroup cimport MySpriteGroup
 from cell cimport Cell
 
-cdef fun(int num):
-    num += 1
-
 cdef class Game:
 
     def __cinit__(self):
         self.running = True
-        self.fps = fps
         self.energy_field = [[
             {
                 'sun': 8 - j * cell_size // 128,
@@ -20,23 +16,17 @@ cdef class Game:
             }
             for i in range(1800 // cell_size)]
             for j in range(900 // cell_size)]
-        # energy_field = [[(8 - j, j ) for i in range(18)] for j in range(9)]
-        # pprint(energy_field)
         self.cells_field = [[None for i in range(window_width // cell_size)]
                                         for j in range(window_height // cell_size)]
 
         self.cells_group = MySpriteGroup()
         self.dead_cells_group = MySpriteGroup()
 
-    def __init__(self, object pipe):
-
+    def __init__(self, object pipe, object csv_writer):
         self.pipe = pipe
-        # cdef Cell cell = Cell([10, 10], self)
-
-        # self.cells_group.add(cell)
-
-        # self.cells_field[10][10] = cell
+        self.csv_writer = csv_writer
         self.generate_cells()
+        self.cell_number = 0
 
 
     cdef generate_cells(self):
@@ -51,7 +41,6 @@ cdef class Game:
 
     cdef update(self):
         for cell in self.cells_group:
-        # for cell in self.cells_list:
             Cell.update(cell)
 
     cdef draw(self):

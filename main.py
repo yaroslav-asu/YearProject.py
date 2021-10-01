@@ -1,18 +1,26 @@
+import csv
 import datetime
 import random
-import sqlite3
+import sys
 from multiprocessing import Pipe, Process
 
+from PySide6.QtWidgets import QApplication, QLabel
+
+from interface_logic import run_interface
 from screen_core import CellsFieldImage
 from variables import *
 
-FPS = 1000
 cells_field_image = CellsFieldImage()
 parent_conn, child_conn = Pipe()
 
 
-con = sqlite3.connect('cells.db')
-cur = con.cursor()
+def proc():
+    app = QApplication(sys.argv)
+    label = QLabel("Hello World!")
+    label.show()
+    app.exec()
+
+
 def get_from_queue():
     if parent_conn.poll(0.001):
         return parent_conn.recv()
@@ -29,27 +37,34 @@ def do_actions():
             cells_field_image.delete(*responce[1])
         elif responce[0] == "move_cell_on_screen":
             cells_field_image.move(*responce[1])
-        elif responce[0] == "bd":
-            bd.append(responce[1])
         else:
             print("request_exception")
             print(responce)
 
 
+def save_seed_to_csv():
+    with open('seeds.csv', 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=' ', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow([datetime.datetime.now().strftime("%H:%M:%S %d/%m/%Y"), random_seed,
+                         cell_size, cell_mutation_chance])
+
+
 if __name__ == "__main__":
     from core import start_game
 
-    now = datetime.datetime.now()
     random_seed = 0
     for i in range(30):
         random_seed = random_seed * 10 + random.randint(0, 10)
     print(random_seed)
-    random_seed = 956555860421311649120215809977
     #     random_seed = 1958475834730119261883859762763
     #     956555860421311649120215809977, размер 15
-
-    # start_game()
+    # 550503209342900385906100700873, 18
+    random_seed = 192068908107884041056006111951
+    save_seed_to_csv()
     FLIP_INTERVAL = 120
+
+    interface_process = Process(target=run_interface)
+    interface_process.start()
 
     game_process = Process(target=start_game, args=(child_conn, random_seed))
     game_process.start()
@@ -66,9 +81,6 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            # if event.type == pygame.MOUSEBUTTONUP:
-            #     pos = pygame.mouse.get_pos()
-            #     parent_conn.send(pos)
 
         do_actions()
         if counter >= FLIP_INTERVAL:
@@ -78,14 +90,6 @@ if __name__ == "__main__":
             pygame.display.flip()
             counter = 0
         counter += 1
+    interface_process.kill()
     game_process.kill()
     pygame.quit()
-
-    bd_len = len(bd)
-    for i in range(bd_len):
-        cur.execute(f"""INSERT INTO cells VALUES ({bd[i]})""")
-        con.commit()
-
-    con.close()
-
-

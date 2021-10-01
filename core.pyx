@@ -1,19 +1,11 @@
 import random
-
-
-# class CPipe:
-#     def __init__(self, pipe):
-#         self.pipe = pipe
-#     def recv(self):
-#         return self.pipe.recv()
-#
-#     def send(self, arg):
-#         self.pipe.send(arg)
-
+import csv
 from game cimport Game
 
 def start_game(pipe, random_seed):
-    # cpipe = CPipe(pipe)
     random.seed(random_seed)
-    cdef Game game = Game(pipe)
-    game.run()
+    with open(f'{random_seed}.csv', 'a', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        game = Game(pipe, csv_writer)
+        game.run()
+

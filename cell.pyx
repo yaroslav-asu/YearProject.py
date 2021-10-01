@@ -38,6 +38,7 @@ cdef class Cell(MySprite):
         self.border_color = color
         self.game = game
         self.game.pipe.send(('add_cell_to_screen', (self.color, self.border_color, self.x, self.y)))
+
         if not parent:
             self.genome = [25 for i in range(64)]
             # self.genome = numpy.array([randint(0, 64) for i in range(64)], numpy.int8)
@@ -46,31 +47,26 @@ cdef class Cell(MySprite):
             if random() < cell_mutation_chance / 100:
                 self.genome[randint(0, 63)] = randint(1, 63)
 
+        self.number = self.game.cell_number
+        self.game.cell_number += 1
+        if parent:
+            parent_num = parent.number
+        else:
+            parent_num = -1
+        self.game.csv_writer.writerow([parent_num, self.genome])
+
         # self.game.cells_field[self.x][self.y] = self
         self.game.cells_group.add(self)
-        game.pipe.send(('bd', self.x))
 
     cdef public change_color(self):
-        maximum_color_id = 0
-        colors = [self.from_cells_energy_counter,
-                  self.from_sun_energy_counter,
-                  self.from_minerals_energy_counter]
-        if any(colors):
-            for color_id in range(0, 3):
-                if colors[color_id] > colors[maximum_color_id]:
-                    maximum_color_id = color_id
-            self.color[maximum_color_id] = 150
-            for color_id in list({0, 1, 2} - {maximum_color_id}):
-                self.color[color_id] = int(colors[color_id] / colors[maximum_color_id] * 150)
-    # cdef public change_color(self):
-    #     sum = self.from_cells_energy_counter + self.from_sun_energy_counter + \
-    #           self.from_minerals_energy_counter
-    #     colors = [self.from_cells_energy_counter,
-    #               self.from_sun_energy_counter,
-    #               self.from_minerals_energy_counter]
-    #     if all(colors):
-    #         self.color = [self.from_cells_energy_counter / sum * 150, self.from_sun_energy_counter
-    #                       / sum * 150, self.from_minerals_energy_counter / sum * 150]
+        sum = self.from_cells_energy_counter + self.from_sun_energy_counter + \
+              self.from_minerals_energy_counter
+        if all([self.from_cells_energy_counter,
+                self.from_sun_energy_counter,
+                self.from_minerals_energy_counter]):
+            self.color = [self.from_cells_energy_counter / sum * 250, self.from_sun_energy_counter
+                          / sum * 250, self.from_minerals_energy_counter / sum * 250]
+            # print(self.color)
 
     cdef bite(self):
         cdef bint bitten = False

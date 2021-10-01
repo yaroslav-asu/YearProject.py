@@ -6,7 +6,7 @@ cdef class Cell(MySprite):
     cdef public int x,  y, degree, energy, max_energy, genome_id, children_counter, \
         recursion_counter, \
         actions_count, from_sun_energy_counter, from_cells_energy_counter, \
-        from_minerals_energy_counter
+        from_minerals_energy_counter, number
     cdef list color, border_color
     cdef public list genome
     cdef Game game

@@ -1,15 +1,14 @@
 from threading import Lock
 import numpy
 import pygame
-bd = []
+
 background_color = (180, 180, 180)
 border_color = (170, 170, 170)
-dead_cell_color = ()
 window_width = 1800
 window_height = 900
 
 # cell_size = 3
-cell_size = 18
+cell_size = 35
 cell_mutation_chance = 100
 
 cell_energy_to_live = 3
@@ -27,19 +26,11 @@ actions_costs = {
 }
 
 start_cell_energy = 50
-max_cell_energy = 100
+max_cell_energy = 150
 genome_size = 64
 
 stop_lock = Lock()
 stop = False
-fps = 10
-
-
-# def create_border(image, color):
-#     for pos in [((0, 0), (cell_size - 1, 0)), ((cell_size - 1, 0), (cell_size - 1, cell_size - 1)),
-#                 ((cell_size - 1, cell_size - 1), (0, cell_size - 1)), ((0, cell_size - 1), (0,
-#                                                                                             0))]:
-#         pygame.draw.line(image, color, *pos, 1)
 
 
 def normalize_coords(*args):

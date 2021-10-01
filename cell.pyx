@@ -64,9 +64,11 @@ cdef class Cell(MySprite):
         if all([self.from_cells_energy_counter,
                 self.from_sun_energy_counter,
                 self.from_minerals_energy_counter]):
-            self.color = [self.from_cells_energy_counter / sum * 250, self.from_sun_energy_counter
-                          / sum * 250, self.from_minerals_energy_counter / sum * 250]
-            # print(self.color)
+            self.color = [
+                int(self.from_cells_energy_counter / sum * 250),
+                int(self.from_sun_energy_counter / sum * 250),
+                int(self.from_minerals_energy_counter / sum * 250)
+            ]
 
     cdef bite(self):
         cdef bint bitten = False
@@ -196,8 +198,6 @@ cdef class Cell(MySprite):
             return 'Wall'
         if isinstance(self.game.cells_field[y][x], Cell):
             counter = 0
-            # for i in [i for i in range]
-            # for i in self.genome == self.game.cells_field[y][x]:
             for i in range(genome_size):
                 if self.genome[i] != self.game.cells_field[y][x].genome[i]:
                     counter += 1

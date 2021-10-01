@@ -10,13 +10,9 @@ from PyQt5 import QtWidgets, uic, QtCore
 class Interface(QtWidgets.QMainWindow):
     genomeLayout: QtWidgets.QVBoxLayout
 
-    def __init__(self):
+    def __init__(self, pipe):
         super().__init__()
         uic.loadUi("interface.ui", self)
-        # self.ui = Ui_MainWindow()
-        # self.ui.setupUi(self)
-        # print(self.PauseButton)
-        # self.PauseButton.clicked.connect(self.stop_game)
         self.move((1920 - self.width()) // 2 + 640, (1080 - self.height() - 75) // 2)
         self.stopButton.clicked.connect(self.stop_game)
         self.genomeLayoutList = []
@@ -30,6 +26,7 @@ class Interface(QtWidgets.QMainWindow):
                 # qlabel.setText(str(0))
                 horizontal_layout.addWidget(qlabel)
             self.genomeLayout.addLayout(horizontal_layout)
+        self.pipe = pipe
 
     def fill_window(self, sprite):
         self.fill_genome_field(sprite)
@@ -64,31 +61,22 @@ class Interface(QtWidgets.QMainWindow):
         self.minerals_count_label.setText("")
 
     def stop_game(self):
-        from variables import stop_lock
-        import variables
-        with stop_lock:
-            variables.stop = not variables.stop
-            if variables.stop:
-                self.stopButton.setText("start")
-            if not variables.stop:
-                self.stopButton.setText("stop")
+        self.pipe.send(("toggle_pause",))
 
     def fill_cells_count(self, game):
         self.cells_count_on_field.setText("Количество клеток на поле: " + str(len(
             game.cells_group)))
-
-    def update(self, game):
-        self.fill_cells_count(game)
 
     def closeEvent(self, event):
         os._exit(1)
         event.acept()
 
 
-app = QtWidgets.QApplication(sys.argv)
-window = Interface()
 
 
-def run_interface():
+
+def run_interface(pipe):
+    app = QtWidgets.QApplication(sys.argv)
+    window = Interface(pipe)
     window.show()
     app.exec_()

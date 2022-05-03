@@ -61,9 +61,6 @@ if __name__ == "__main__":
     # 550503209342900385906100700873, 18
     FLIP_INTERVAL = 120
 
-    interface_process = Process(target=run_interface, args=(child_conn, ))
-    interface_process.start()
-
     game_process = Process(target=start_game, args=(child_conn, random_seed))
     game_process.start()
 
@@ -93,9 +90,7 @@ if __name__ == "__main__":
             counter = 0
         counter += 1
 
-    interface_process.join()
     game_process.join()
-    interface_process.kill()
     game_process.kill()
 
     pygame.quit()

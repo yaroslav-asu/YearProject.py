@@ -1,16 +1,14 @@
+from pprint import pprint
 from random import random
 
-from cython_objects.game.myspritegroup.myspritegroup cimport MySpriteGroup
+from Cython import typeof
+
 from cython_objects.game.cell.cell cimport Cell
-from cython_objects.configs.configs cimport GameConfig, CellConfig
+from cython_objects.configs.configs cimport GameConfig
 
 cdef class Game:
-    def __cinit__(self):
-        self.running = True
-        self.cells_group = MySpriteGroup()
-        self.dead_cells_group = MySpriteGroup()
-
     def __init__(self, object pipe, GameConfig config):
+        self.running = True
         self.pipe = pipe
         self.cell_number = 0
         self.config = config
@@ -40,8 +38,11 @@ cdef class Game:
             self.update()
 
     cdef update(self):
-        for cell in self.cells_group:
-            Cell.update(cell)
+        for i in range(self.config.screen_config.window_height // self.config.cell_config.cell_size):
+            for j in range(self.config.screen_config.window_width // self.config.cell_config.cell_size):
+                if self.cells_field[i][j] is not None:
+                    if typeof(self.cells_field[i][j]) is Cell:
+                        Cell.update(self.cells_field[i][j])
 
     cdef draw(self):
         pass

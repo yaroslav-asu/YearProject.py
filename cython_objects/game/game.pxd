@@ -1,4 +1,3 @@
-from cython_objects.game.myspritegroup.myspritegroup cimport  MySpriteGroup
 from cython_objects.configs.configs cimport GameConfig
 
 cdef class Game:
@@ -8,7 +7,6 @@ cdef class Game:
     cdef public object pipe
     cdef GameConfig config
 
-    cdef public MySpriteGroup cells_group, dead_cells_group
     cdef generate_cells(self)
     cdef public run(self)
     cdef update(self)

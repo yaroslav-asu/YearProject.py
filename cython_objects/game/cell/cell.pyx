@@ -1,9 +1,8 @@
 from random import randint, random
 
 from cython_objects.game.cell.dead_cell.deadcell cimport DeadCell
-from cython_objects.game.myspritegroup.myspritegroup cimport MySpriteGroup
 
-cdef class Cell(MySprite):
+cdef class Cell:
     def __cinit__(self):
 
         self.genome_id: int = 0
@@ -14,9 +13,8 @@ cdef class Cell(MySprite):
         self.from_cells_energy_counter = 0
         self.from_minerals_energy_counter = 0
 
-    def __init__(self, list coords, Game game, Cell parent=None, color=[20, 150, 20]):
+    def __init__(self, list coords, Game game, Cell parent=None):
         super().__init__()
-        game.cells_group.add(self)
 
         self.energy = game.config.cell_config.start_cell_energy
         self.max_energy = game.config.cell_config.max_cell_energy
@@ -32,12 +30,9 @@ cdef class Cell(MySprite):
             26: self.move,
             27: self.bite
         }
-        self.x = coords[1]
-        self.y = coords[0]
-        self.color = color
-        self.border_color = color
+        self.y, self.x = coords
         self.game = game
-        self.game.pipe.send(('add_cell_to_screen', (self.color, self.border_color, self.x, self.y)))
+        self.game.pipe.send(('add_cell_to_screen', (self.x, self.y)))
 
         if not parent:
             self.genome = [25 for i in range(64)]
@@ -48,24 +43,6 @@ cdef class Cell(MySprite):
 
         self.number = self.game.cell_number
         self.game.cell_number += 1
-        if parent:
-            parent_num = parent.number
-        else:
-            parent_num = -1
-
-        self.game.cells_group.add(self)
-
-    cdef public change_color(self):
-        sum = self.from_cells_energy_counter + self.from_sun_energy_counter + \
-              self.from_minerals_energy_counter
-        if all([self.from_cells_energy_counter,
-                self.from_sun_energy_counter,
-                self.from_minerals_energy_counter]):
-            self.color = [
-                int(self.from_cells_energy_counter / sum * 250),
-                int(self.from_sun_energy_counter / sum * 250),
-                int(self.from_minerals_energy_counter / sum * 250)
-            ]
 
     cdef bite(self):
         cdef bint bitten = False
@@ -77,6 +54,7 @@ cdef class Cell(MySprite):
         elif in_front_obj == 'DeadCell':
             DeadCell.kill(self.game.cells_field[in_front_coords[1]][in_front_coords[0]])
             bitten = True
+
         if bitten:
             self.energy += self.config.eat_gain_energy
             self.from_cells_energy_counter += 1
@@ -93,14 +71,12 @@ cdef class Cell(MySprite):
                     self.actions_count -= self.config.actions_costs[action_id]
                     self.genome_id = (self.genome_id + 1) % 64
                     self.do_action(self.genome[self.genome_id])
-
                 else:
                     self.energy -= self.config.cell_energy_to_live
                     self.actions_count = self.config.cells_available_actions_count
             else:
                 self.genome_id = (self.genome_id + self.genome[(self.genome_id + 1) % 64]) % 64
                 self.do_action(self.genome[self.genome_id])
-
         except RecursionError:
             print("recErr", self.recursion_counter)
             self.kill()
@@ -153,9 +129,7 @@ cdef class Cell(MySprite):
         if self.can_move(in_front_coords):
             self.x, self.y = in_front_coords
         if start_x != self.x or start_y != self.y:
-            self.game.pipe.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y,
-                                                         self.color, self.border_color
-                                                         )))
+            self.game.pipe.send(('move_cell_on_screen', (start_x, start_y, self.x, self.y)))
             self.game.cells_field[start_y][start_x] = None
             self.game.cells_field[self.y][self.x] = self
 
@@ -166,7 +140,7 @@ cdef class Cell(MySprite):
             x, y = args[0], args[1]
 
         if 0 <= y < self.config.max_y_id and \
-                not self.get_object_from_coords([x % (self.config.max_x_id), y]):
+                not self.get_object_from_coords([x % self.config.max_x_id, y]):
             return True
         else:
             return False
@@ -196,10 +170,8 @@ cdef class Cell(MySprite):
             return None
 
     cdef public update(self):
-        self.change_color()
         if self.energy >= self.max_energy:
             self.reproduce()
-            pass
         elif self.energy <= 0:
             self.kill()
             return
@@ -209,7 +181,7 @@ cdef class Cell(MySprite):
     cdef reproduce(self):
         coords_list = []
         for i in range(0, 2):
-            x = (self.x + (-1) ** i + self.config.max_x_id) % (self.config.max_x_id)
+            x = (self.x + (-1) ** i + self.config.max_x_id) % self.config.max_x_id
             y = self.y + (-1) ** i
             if self.can_move([x, self.y]):
                 coords_list.append((self.y, x))
@@ -218,10 +190,8 @@ cdef class Cell(MySprite):
         if len(coords_list):
             coords = coords_list[randint(0, len(coords_list) - 1)]
             self.game.cells_field[coords[0]][coords[1]] = \
-                Cell([coords[0], coords[1]], self.game, self, self.color)
+                Cell([coords[0], coords[1]], self.game, self)
         else:
-            MySpriteGroup.remove(self.game.cells_group, self)
-            # super().kill()
             self.game.cells_field[self.y][self.x] = DeadCell([self.y, self.x], self.game)
             return
         self.energy = self.config.start_cell_energy
@@ -242,11 +212,10 @@ cdef class Cell(MySprite):
     cdef public kill(self):
         self.game.cells_field[self.y][self.x] = None
         self.game.pipe.send(('delete_cell_from_screen', (self.x, self.y)))
-        MySprite.kill(self)
 
     def normalize_coords(self, list args):
         if len(args) == 1:
             args = [args[0][0], args[0][1]]
-        cdef int x = args[0] % (self.config.max_x_id)
+        cdef int x = args[0] % self.config.max_x_id
         cdef int y = args[1]
         return [x, y]

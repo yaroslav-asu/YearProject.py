@@ -1,9 +1,12 @@
 import asyncio
 import typing
+from multiprocessing import Pipe, Process
 from typing import Dict, Tuple
 
 from fastapi import FastAPI
 from starlette.endpoints import WebSocket, WebSocketEndpoint
+
+from cython_objects.configs.configs import GameConfig
 
 UDP_PORT = 8001
 
@@ -29,8 +32,6 @@ class MyWSEndpoint(WebSocketEndpoint):
     async def on_connect(self, websocket: WebSocket) -> None:
         await websocket.accept()
         ws_clients[websocket.client.host] = websocket
-
-        await websocket.send_json({"Msg": "hello world"})
 
     async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
         ws_clients.pop(websocket.client.host)

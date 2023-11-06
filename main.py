@@ -2,17 +2,14 @@ import random
 import subprocess
 from multiprocessing import Pipe, Process
 
-import pygame
 
 from cython_objects.configs.configs import GameConfig, ScreenConfig, CellConfig
-from screen_core import CellsFieldImage
 
 
 class GameStarter:
     def __init__(self, config):
         self.config = config
         self.parent_conn, self.child_conn = Pipe()
-        self.cells_field_image = CellsFieldImage(config)
         self.stop = False
 
     def get_from_queue(self):
@@ -23,11 +20,14 @@ class GameStarter:
         response = self.get_from_queue()
         if response:
             if response[0] == "add_cell_to_screen":
-                self.cells_field_image.add(*response[1])
+                # self.cells_field.add(*response[1])
+                pass
             elif response[0] == "delete_cell_from_screen":
-                self.cells_field_image.delete(*response[1])
+                pass
+                # self.cells_field.delete(*response[1])
             elif response[0] == "move_cell_on_screen":
-                self.cells_field_image.move(*response[1])
+                pass
+                # self.cells_field.move(*response[1])
             elif response[0] == "toggle_pause":
                 self.stop = not self.stop
             else:
@@ -39,13 +39,7 @@ class GameStarter:
 
         game_process = Process(target=start_game, args=(self.child_conn, self.config))
         game_process.start()
-        pygame.init()
-        pygame.mixer.init()
 
-        pygame.display.set_caption("Game")
-        screen = pygame.display.set_mode(
-            (self.config.screen_config.window_width, self.config.screen_config.window_height)
-        )
         running = True
         counter = 0
         while running:
@@ -53,22 +47,13 @@ class GameStarter:
             if self.stop:
                 continue
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
             if counter >= self.config.flip_interval:
-                screen.blit(self.cells_field_image, (0, 0))
-                self.cells_field_image.render()
-
-                pygame.display.flip()
+                # Send screen
                 counter = 0
             counter += 1
 
         game_process.join()
         game_process.kill()
-
-        pygame.quit()
 
 
 if __name__ == "__main__":

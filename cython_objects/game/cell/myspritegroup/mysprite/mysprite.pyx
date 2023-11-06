@@ -1,4 +1,4 @@
-from myspritegroup cimport MySpriteGroup
+from cython_objects.game.cell.myspritegroup.myspritegroup cimport MySpriteGroup
 cdef class MySprite:
     def __init__(self):
         self.__g = {}

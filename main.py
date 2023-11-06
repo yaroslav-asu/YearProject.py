@@ -5,7 +5,7 @@ import subprocess
 from multiprocessing import Pipe, Process
 
 from screen_core import CellsFieldImage
-from variables import *
+from internal.variables import *
 
 cells_field_image = CellsFieldImage()
 parent_conn, child_conn = Pipe()
@@ -51,11 +51,9 @@ def set_seed(start_seed=None, seed_length=30):
 
 
 if __name__ == "__main__":
-    shell_command = "python setup.py build_ext --inplace"
-    subprocess.call(shell_command.split())
 
-    from core import start_game
-    from variables import stop
+    from cython_objects.core import start_game
+    from internal.variables import stop
 
     random_seed = 0
     FLIP_INTERVAL = 120

@@ -1,8 +1,8 @@
 from random import random
-from variables import *
+from internal.variables import *
 
-from myspritegroup cimport MySpriteGroup
-from cell cimport Cell
+from cython_objects.game.cell.myspritegroup.myspritegroup cimport MySpriteGroup
+from cython_objects.game.cell.cell cimport Cell
 
 cdef class Game:
 

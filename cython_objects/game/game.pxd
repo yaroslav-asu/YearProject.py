@@ -1,4 +1,4 @@
-from myspritegroup cimport  MySpriteGroup
+from cython_objects.game.cell.myspritegroup.myspritegroup cimport  MySpriteGroup
 cdef class Game:
     cdef bint running
     cdef unsigned long int cell_number

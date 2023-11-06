@@ -1,8 +1,8 @@
 from random import randint, random
 
-from deadcell cimport DeadCell
-from myspritegroup cimport MySpriteGroup
-from variables import *
+from cython_objects.game.cell.dead_cell.deadcell cimport DeadCell
+from cython_objects.game.cell.myspritegroup.myspritegroup cimport MySpriteGroup
+from internal.variables import *
 
 cdef class Cell(MySprite):
     def __cinit__(self):

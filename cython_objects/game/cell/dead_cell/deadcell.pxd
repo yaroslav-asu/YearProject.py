@@ -1,5 +1,5 @@
-from game cimport Game
-from mysprite cimport MySprite
+from cython_objects.game.game cimport Game
+from cython_objects.game.cell.myspritegroup.mysprite.mysprite cimport MySprite
 
 cdef class DeadCell(MySprite):
     cdef Game game

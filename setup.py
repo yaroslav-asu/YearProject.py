@@ -1,21 +1,13 @@
 import numpy
 
-from setuptools import setup
+from setuptools import setup, Extension
 from Cython.Build import cythonize
-sp = []
-file_names = [
-    "cell",
-    "game",
-    "game",
-    "deadcell",
-    "mysprite",
-    "myspritegroup"
+
+extensions = [
+    Extension("*", ["*.pyx"]),
 ]
-for i in file_names:
-    sp.append(i + ".pyx")
-    sp.append(i + ".pxd")
 
 setup(
-    ext_modules=cythonize(sp + ["core.pyx"]),
+    ext_modules=cythonize(extensions),
     include_dirs=[numpy.get_include()]
 )

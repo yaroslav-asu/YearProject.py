@@ -1,9 +1,9 @@
 import csv
 import datetime
 import random
+import subprocess
 from multiprocessing import Pipe, Process
 
-from interface_logic import run_interface
 from screen_core import CellsFieldImage
 from variables import *
 
@@ -51,14 +51,13 @@ def set_seed(start_seed=None, seed_length=30):
 
 
 if __name__ == "__main__":
+    shell_command = "python setup.py build_ext --inplace"
+    subprocess.call(shell_command.split())
+
     from core import start_game
     from variables import stop
 
     random_seed = 0
-    # set_seed(192068908107884041056006111951)
-    #     random_seed = 1958475834730119261883859762763
-    #     956555860421311649120215809977, размер 15
-    # 550503209342900385906100700873, 18
     FLIP_INTERVAL = 120
 
     game_process = Process(target=start_game, args=(child_conn, random_seed))

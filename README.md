@@ -1,7 +1,17 @@
 # YearProject.py
+
 Inspired by: foo52ru ТехноШаман
 
 Python 3.9
 
 How to run:
-   Before start run: "source/to/python/venv setup.py build_ext --inplace"
+-----------
+
+Run this command with your python venv:
+
+```
+pip install -r requirements.txt
+```
+
+Run main.py
+

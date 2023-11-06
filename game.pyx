@@ -1,4 +1,3 @@
-from pprint import pprint
 from random import random
 from variables import *
 

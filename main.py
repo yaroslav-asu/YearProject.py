@@ -75,8 +75,7 @@ if __name__ == "__main__":
     subprocess.call("python setup.py build_ext --inplace", shell=True)
     game_config = GameConfig(
         seed=random.randint(0, 10 ** 5),
-        cell_config=CellConfig(),
-        screen_config=ScreenConfig(),
+        cell_size=10,
     )
 
     game_starter = GameStarter(game_config)

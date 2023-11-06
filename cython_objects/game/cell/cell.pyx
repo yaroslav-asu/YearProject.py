@@ -2,7 +2,6 @@ from random import randint, random
 
 from cython_objects.game.cell.dead_cell.deadcell cimport DeadCell
 from cython_objects.game.myspritegroup.myspritegroup cimport MySpriteGroup
-from cython_objects.configs.configs cimport CellConfig, ScreenConfig
 
 cdef class Cell(MySprite):
     def __cinit__(self):
@@ -90,8 +89,7 @@ cdef class Cell(MySprite):
         try:
             if action_id in self.actions_dict.keys():
                 if self.actions_count - self.config.actions_costs[action_id] >= 0:
-                    self.actions_dict[action_id](self)
-
+                    self.actions_dict[action_id]()
                     self.actions_count -= self.config.actions_costs[action_id]
                     self.genome_id = (self.genome_id + 1) % 64
                     self.do_action(self.genome[self.genome_id])

@@ -1,6 +1,5 @@
 cdef class ScreenConfig:
     cdef public tuple background_color
-    cdef public tuple border_color
     cdef public int window_width
     cdef public int window_height
 

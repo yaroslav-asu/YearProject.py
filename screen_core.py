@@ -29,13 +29,11 @@ class CursorImage(pygame.Surface):
                                       cell_size, cell_size))
 
     def update(self):
-        import interface_logic
         if self.connected_cell:
             if self.connected_cell.groups():
                 self.set_cursor_position(
                     (self.connected_cell.x * cell_size, self.connected_cell.y * cell_size))
             else:
-                interface_logic.window.clear_window()
                 self.clear()
 
 

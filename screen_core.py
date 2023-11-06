@@ -1,20 +1,26 @@
 from typing import Tuple
 
 import numpy as np
+import pygame
 
-from internal.variables import *
+from cython_objects.configs.configs import GameConfig
 
 
 class CellsFieldImage(pygame.Surface):
-    color = background_color
-    grey_square = pygame.Surface((cell_size, cell_size))
-    grey_square.fill(color)
 
-    cells_cache = {}
+    def __init__(self, config: GameConfig):
+        self.config = config
+        window_width = config.screen_config.window_width
+        window_height = config.screen_config.window_height
 
-    def __init__(self):
         super().__init__((window_width, window_height))
+
+        self.cells_cache = {}
+
+        self.color = config.screen_config.background_color
         self.fill(self.color)
+
+        cell_size = config.cell_config.cell_size
 
         self.cells_data = np.zeros((window_width // cell_size, window_height // cell_size, 5),
                                    dtype=np.int32)
@@ -45,6 +51,8 @@ class CellsFieldImage(pygame.Surface):
 
     def render_cell(self, cell_info):
         cell_color: Tuple[int, int] = tuple(cell_info[:3])
+        cell_size = self.config.cell_config.cell_size
+
         x, y = cell_info[3:]
 
         cached_cell = self.cells_cache.get(cell_color)

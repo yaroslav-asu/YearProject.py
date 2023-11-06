@@ -1,10 +1,9 @@
 import random
-import csv
-from cython_objects.game.game cimport Game
 
-def start_game(pipe, random_seed):
-    random.seed(random_seed)
-    with open(f'{random_seed}.csv', 'a', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        game = Game(pipe, csv_writer)
-        game.run()
+from cython_objects.game.game cimport Game
+from cython_objects.configs.configs cimport GameConfig
+
+def start_game(pipe, GameConfig game_config):
+    random.seed(game_config.seed)
+    game = Game(pipe, game_config)
+    game.run()

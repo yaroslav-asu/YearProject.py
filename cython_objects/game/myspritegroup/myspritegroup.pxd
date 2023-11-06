@@ -1,4 +1,4 @@
-from cython_objects.game.cell.myspritegroup.mysprite.mysprite cimport MySprite
+from cython_objects.game.myspritegroup.mysprite.mysprite cimport MySprite
 
 cdef class MySpriteGroup:
     cdef public dict sprites

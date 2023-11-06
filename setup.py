@@ -1,21 +1,21 @@
 import numpy
 
-from setuptools import setup
+from setuptools import setup, Extension
 from Cython.Build import cythonize
-sp = []
-file_names = [
-    "cell",
-    "game",
-    "game",
-    "deadcell",
-    "mysprite",
-    "myspritegroup"
+import os
+
+dirs = []
+extensions = [
+
 ]
-for i in file_names:
-    sp.append(i + ".pyx")
-    sp.append(i + ".pxd")
+w = os.walk("cython_objects")
+for (dirpath, dirnames, filenames) in w:
+    if "__pycache__" in dirpath:
+        continue
+    extensions.append(Extension("*", [f"{dirpath}/*.pyx"]))
+    dirs.append(dirpath)
 
 setup(
-    ext_modules=cythonize(sp + ["core.pyx"]),
-    include_dirs=[numpy.get_include()]
+    ext_modules=cythonize(extensions),
+    include_dirs=[numpy.get_include(), *dirs]
 )

@@ -1,9 +1,8 @@
-from mysprite cimport MySprite
+from cython_objects.game.myspritegroup.mysprite.mysprite cimport MySprite
 
 cdef class MySpriteGroup:
     def __init__(self):
         self.sprites = {}
-        # self.sprites = set()
 
     cdef public add(self, MySprite sprite):
         if isinstance(sprite, MySprite):
@@ -13,7 +12,6 @@ cdef class MySpriteGroup:
 
     cdef add_internal(self, MySprite sprite):
         self.sprites[sprite] = 0
-        # self.sprites.add(sprite)
 
     cdef has_internal(self, MySprite  sprite):
         return sprite in self.sprites
@@ -28,4 +26,3 @@ cdef class MySpriteGroup:
 
     def __iter__(self):
         return iter(self.sprites.copy())
-        # return list(self.sprites)

@@ -21,8 +21,8 @@ cdef class Game:
                 'sun': 8 - j * cell_size // 128,
                 'minerals': j * cell_size // 128
             }
-            for i in range(1800 // cell_size)]
-            for j in range(900 // cell_size)]
+            for i in range(self.config.screen_config.window_width // cell_size)]
+            for j in range(self.config.screen_config.window_height // cell_size)]
         self.cells_field = [[None for i in range(self.config.screen_config.window_width // cell_size)]
                             for j in range(self.config.screen_config.window_height // cell_size)]
 

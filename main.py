@@ -1,12 +1,3 @@
-import random
-import subprocess
-from multiprocessing import Pipe, Process
-
-import pygame
-
-from cython_objects.configs.configs import GameConfig, ScreenConfig, CellConfig
-from screen_core import CellsFieldImage
-
 
 class GameStarter:
     def __init__(self, config):
@@ -72,10 +63,25 @@ class GameStarter:
 
 
 if __name__ == "__main__":
+    import subprocess
     subprocess.call("python setup.py build_ext --inplace", shell=True)
+
+    import random
+    from multiprocessing import Pipe, Process
+
+    import pygame
+
+    from cython_objects.configs.configs import GameConfig
+    from screen_core import CellsFieldImage
+
     game_config = GameConfig(
         seed=random.randint(0, 10 ** 5),
-        cell_size=10,
+        cell_size=5,
+        window_width=1800,
+        window_height=1000,
+        flip_interval=120,
+        genome_size=8,
+        max_genome_value=10,
     )
 
     game_starter = GameStarter(game_config)

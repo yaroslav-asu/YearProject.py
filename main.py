@@ -81,7 +81,6 @@ if __name__ == "__main__":
         window_height=1000,
         flip_interval=120,
         genome_size=8,
-        max_genome_value=10,
     )
 
     game_starter = GameStarter(game_config)

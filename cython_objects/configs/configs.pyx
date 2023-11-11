@@ -15,17 +15,17 @@ cdef class CellActionsCostConfig:
                  turn: int = 1,
                  get_minerals_energy: int = 5,
                  photosynthesis: int = 5,
-                 move: int = 26,
+                 move: int = 1,
                  eat: int = 2
                  ):
         self.actions_costs = {
-            21: check_energy,
-            22: check_cell_in_front,
-            23: turn,
-            24: get_minerals_energy,
-            25: photosynthesis,
-            26: move,
-            27: eat
+            1: check_energy,
+            2: check_cell_in_front,
+            3: turn,
+            4: get_minerals_energy,
+            5: photosynthesis,
+            6: move,
+            7: eat
         }
 
 cdef class CellConfig:
@@ -39,6 +39,7 @@ cdef class CellConfig:
                  start_cell_energy: int,
                  max_cell_energy: int,
                  genome_size: int,
+                 max_genome_value: int,
                  screen_config: ScreenConfig,
                  ):
         self.cell_size = cell_size
@@ -50,6 +51,7 @@ cdef class CellConfig:
         self.start_cell_energy = start_cell_energy
         self.max_cell_energy = max_cell_energy
         self.genome_size = genome_size
+        self.max_genome_value = max_genome_value
         self.max_x_id = screen_config.window_width // cell_size
         self.max_y_id = screen_config.window_height // cell_size
 
@@ -72,6 +74,7 @@ cdef class GameConfig:
             start_cell_energy: int = 50,
             max_cell_energy: int = 150,
             genome_size: int = 64,
+            max_genome_value: int = 64,
             # Cell actions const settings
             int check_energy = 1,
             int check_cell_in_front = 1,
@@ -102,7 +105,8 @@ cdef class GameConfig:
             start_cell_energy=start_cell_energy,
             max_cell_energy=max_cell_energy,
             genome_size=genome_size,
-            screen_config=self.screen_config
+            screen_config=self.screen_config,
+            max_genome_value=max_genome_value
         )
         self.flip_interval = flip_interval
         self.stop = False

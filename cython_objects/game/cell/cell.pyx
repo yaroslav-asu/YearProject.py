@@ -24,13 +24,13 @@ cdef class Cell(MySprite):
         self.config = game.config.cell_config
 
         self.actions_dict = {
-            21: self.get_self_energy,
-            22: self.look_in_front,
-            23: self.change_degree,
-            24: self.get_energy_from_mineral,
-            25: self.photosynthesize,
-            26: self.move,
-            27: self.bite
+            1: self.get_self_energy,
+            2: self.look_in_front,
+            3: self.change_degree,
+            4: self.get_energy_from_mineral,
+            5: self.photosynthesize,
+            6: self.move,
+            7: self.bite
         }
         self.x = coords[1]
         self.y = coords[0]
@@ -40,11 +40,11 @@ cdef class Cell(MySprite):
         self.game.pipe.send(('add_cell_to_screen', (self.color, self.border_color, self.x, self.y)))
 
         if not parent:
-            self.genome = [25 for i in range(64)]
+            self.genome = [5 for i in range(self.config.genome_size)]
         else:
             self.genome = parent.genome.copy()
             if random() < self.config.cell_mutation_chance / 100:
-                self.genome[randint(0, 63)] = randint(1, 63)
+                self.genome[randint(0, self.config.genome_size - 1)] = randint(1, self.config.max_genome_value - 1)
 
         self.number = self.game.cell_number
         self.game.cell_number += 1
@@ -91,14 +91,14 @@ cdef class Cell(MySprite):
                 if self.actions_count - self.config.actions_costs[action_id] >= 0:
                     self.actions_dict[action_id]()
                     self.actions_count -= self.config.actions_costs[action_id]
-                    self.genome_id = (self.genome_id + 1) % 64
+                    self.genome_id = (self.genome_id + 1) % self.config.genome_size
                     self.do_action(self.genome[self.genome_id])
 
                 else:
                     self.energy -= self.config.cell_energy_to_live
                     self.actions_count = self.config.cells_available_actions_count
             else:
-                self.genome_id = (self.genome_id + self.genome[(self.genome_id + 1) % 64]) % 64
+                self.genome_id = (self.genome_id + self.genome[(self.genome_id + 1) % self.config.genome_size]) % self.config.genome_size
                 self.do_action(self.genome[self.genome_id])
 
         except RecursionError:
@@ -121,13 +121,13 @@ cdef class Cell(MySprite):
         return self.normalize_coords([self.x + x_delta, self.y + y_delta])
 
     cdef change_degree(self):
-        self.degree = (self.degree + (self.genome[(self.genome_id + 1) % 64] % 8) * 45) % 360
+        self.degree = (self.degree + (self.genome[(self.genome_id + 1) % self.config.genome_size] % 8) * 45) % 360
 
     cdef get_self_energy(self):
-        if self.energy < self.genome[(self.genome_id + 1) % 64]:
-            self.do_action(25)
+        if self.energy < self.genome[(self.genome_id + 1) % self.config.genome_size]:
+            self.do_action(1)
         else:
-            self.genome_id = (self.genome_id + 1) % 64
+            self.genome_id = (self.genome_id + 1) % self.config.genome_size
             self.do_action(self.genome_id)
 
     cdef look_in_front(self):
@@ -143,7 +143,7 @@ cdef class Cell(MySprite):
             coefficient = 5
         elif not in_front_obj:
             coefficient = 6
-        action_id = self.genome[(self.genome_id + coefficient) % 64]
+        action_id = self.genome[(self.genome_id + coefficient) % self.config.genome_size]
         self.do_action(action_id)
 
     cdef move(self):

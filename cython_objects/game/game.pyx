@@ -21,17 +21,17 @@ cdef class Game:
                 'sun': 8 - j * cell_size // 128,
                 'minerals': j * cell_size // 128
             }
-            for i in range(self.config.screen_config.window_width // cell_size)]
-            for j in range(self.config.screen_config.window_height // cell_size)]
-        self.cells_field = [[None for i in range(self.config.screen_config.window_width // cell_size)]
-                            for j in range(self.config.screen_config.window_height // cell_size)]
+            for i in range(self.config.cell_config.max_x_id)]
+            for j in range(self.config.cell_config.max_y_id)]
+        self.cells_field = [[None for i in range(self.config.cell_config.max_x_id)]
+                            for j in range(self.config.cell_config.max_y_id)]
 
         self.generate_cells()
 
     cdef generate_cells(self):
         cell_size = self.config.cell_config.cell_size
-        for i in range(self.config.screen_config.window_height // cell_size):
-            for j in range(self.config.screen_config.window_width // cell_size):
+        for i in range(self.config.cell_config.max_y_id):
+            for j in range(self.config.cell_config.max_x_id):
                 if random() < 0.001:
                     self.cells_field[i][j] = Cell([i, j], self)
 

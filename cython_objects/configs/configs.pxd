@@ -16,6 +16,7 @@ cdef class CellConfig:
     cdef public int start_cell_energy
     cdef public int max_cell_energy
     cdef public int genome_size
+    cdef public int max_genome_value
     cdef public int max_x_id
     cdef public int max_y_id
 
@@ -25,3 +26,4 @@ cdef class GameConfig:
     cdef public ScreenConfig screen_config
     cdef public int flip_interval
     cdef public bint stop
+    cdef public int max_genome_value
